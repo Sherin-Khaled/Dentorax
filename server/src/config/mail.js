@@ -46,7 +46,7 @@ export function readMailConfiguration(environment = process.env) {
       socketTimeout: 20_000,
     },
     from: {
-      name: clean(environment.MAIL_FROM_NAME) || "X Dental Store",
+      name: clean(environment.MAIL_FROM_NAME) || "Dentorax",
       email: clean(environment.MAIL_FROM_EMAIL),
     },
     companyRecipient,

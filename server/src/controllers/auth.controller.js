@@ -64,6 +64,23 @@ function normalizeText(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function serializeWelcomePromoResult(promo) {
+  if (promo?.status === "granted") {
+    return {
+      status: "granted",
+      points: promo.points,
+      message: `${promo.points.toLocaleString("en-US")} promotional points added.`,
+    };
+  }
+  if (promo?.status === "invalid") {
+    return {
+      status: "invalid",
+      message: "This promo code is invalid or not currently active.",
+    };
+  }
+  return { status: "none" };
+}
+
 function toSafeUser(user) {
   return {
     id: user.id,
@@ -111,6 +128,8 @@ export async function register(request, response) {
   const phone = normalizeText(request.body?.phone);
   const professionalRole = normalizeText(request.body?.professionalRole);
   const clinicSpecialty = normalizeText(request.body?.clinicSpecialty);
+  const promoCode = normalizeText(request.body?.promoCode).slice(0, 40);
+  const registrationNow = new Date();
   const parsedClinicLocations = await validateClinicLocationInput(
     request.body?.clinicLocations
   );
@@ -180,13 +199,24 @@ export async function register(request, response) {
         { userId: user.id, request },
         database
       );
-      const loyalty = await initializeNewCustomerLoyalty(database, user.id);
-      return { user, session, loyaltyNotification: loyalty.notification };
+      const loyalty = await initializeNewCustomerLoyalty(
+        database,
+        user.id,
+        { now: registrationNow, promoCode }
+      );
+      return {
+        user,
+        session,
+        loyaltyNotification: loyalty.notification,
+        welcomePromo: serializeWelcomePromoResult(loyalty.promo),
+      };
     });
 
     setAuthCookie(response, createToken(result.user.id, result.session.id));
     await deliverNotificationPush(result.loyaltyNotification);
-    return response.status(201).json({ user: toSafeUser(result.user) });
+    return response
+      .status(201)
+      .json({ user: toSafeUser(result.user), welcomePromo: result.welcomePromo });
   } catch (error) {
     if (error?.code === "P2002") {
       return response.status(409).json({ message: "An account with this email already exists." });

@@ -343,7 +343,7 @@ function FastDeliveryProductCard({ product }: { product: Product }) {
 
       <div className="flex flex-1 flex-col p-4">
         <p className="text-[12px] font-semibold text-[#8A8D9A]">
-          {product.brand || "X Dental"}
+          {product.brand || "Dentorax"}
         </p>
         <Link href={productHref} className="mt-1 outline-none focus-visible:ring-2 focus-visible:ring-[var(--xd-gold-focus-ring)]">
           <h3 className="line-clamp-2 font-display text-[15px] font-semibold leading-snug text-[#050505]">

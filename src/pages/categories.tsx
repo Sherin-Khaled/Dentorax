@@ -36,7 +36,7 @@ import { useCatalog } from "@/context/CatalogContext";
 import { getLocalizedCategoryName } from "@/lib/catalogTranslations";
 
 const CATEGORY_IMAGE = `${import.meta.env.BASE_URL}toothtools.webp`;
-const CAT_IMG_BASE = `${import.meta.env.BASE_URL}categories page/`;
+const CAT_IMG_BASE = `${import.meta.env.BASE_URL}categories%20page/`;
 
 type CategoryItem = {
   name: string;
@@ -55,8 +55,12 @@ type QuickAction = {
 // Original custom line-art icons mapped by category slug. Keys cover the
 // website-managed taxonomy slugs (seeded from the backend) plus the legacy
 // local slugs so admin-created categories with those names keep their icons.
-const CATEGORY_IMAGES: Record<string, string> = {
-  // Current owner-managed category-tree slugs
+const CATEGORY_IMAGES: Record<string, string | null> = {
+  // Explicit canonical mapping for every rendered top-level category. A null
+  // entry is an audited missing asset, never a normalization failure.
+  "online-courses": null,
+  "disposable-materials": `${CAT_IMG_BASE}Disposables.svg`,
+  books: null,
   restorative: `${CAT_IMG_BASE}Restorative Materials.svg`,
   endodontics: `${CAT_IMG_BASE}Endodontics.svg`,
   prosthodontics: `${CAT_IMG_BASE}Impression Materials.svg`,
@@ -69,6 +73,7 @@ const CATEGORY_IMAGES: Record<string, string> = {
   "dental-lab": `${CAT_IMG_BASE}Lab Supplies.svg`,
   bleaching: `${CAT_IMG_BASE}Whitening.svg`,
   "burs-stones": `${CAT_IMG_BASE}Burs & Rotary.svg`,
+  pedodontics: null,
   "oral-care-system": `${CAT_IMG_BASE}Prophylaxis.svg`,
   // Website-managed taxonomy (backend slugs)
   anesthesia: `${CAT_IMG_BASE}Anesthesia.svg`,
@@ -100,9 +105,8 @@ const CATEGORY_IMAGES: Record<string, string> = {
   disposables: `${CAT_IMG_BASE}Disposables.svg`,
 };
 
-// No Pedodontics-specific asset currently exists. This neutral clinic icon is
-// used only for genuinely unmapped categories, and development builds report
-// the missing slug rather than silently repeating a taxonomy icon.
+// Used only for entries explicitly audited as missing or for future unknown
+// slugs. Existing dedicated assets are never replaced by this fallback.
 const CATEGORY_FALLBACK_ICON = `${CAT_IMG_BASE}Clinic Essentials.svg`;
 
 function getCategoryIcon(slug: string): string {
@@ -117,7 +121,7 @@ function getCategoryIcon(slug: string): string {
 
 const quickActions: QuickAction[] = [
   { label: "Weekly Offers",     href: "/products?collection=weekly-offers",   Icon: ShoppingCart },
-  { label: "Best Sellers",      href: "/products?collection=best-selling",    Icon: BadgePercent },
+  { label: "Best Prices",       href: "/products?bestPrices=true",            Icon: BadgePercent },
   { label: "New Arrivals",      href: "/products?collection=new-arrivals",    Icon: Sparkles     },
   { label: "Fast Delivery",     href: "/products?collection=fast-delivery",   Icon: Truck        },
   { label: "Clinic Essentials", href: "/products?collection=clinic-essentials", Icon: Stethoscope },

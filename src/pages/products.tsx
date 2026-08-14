@@ -68,6 +68,7 @@ function normalizeBrandQuery(value: string | null) {
 }
 
 function getCollectionFromSearchParams(searchParams: URLSearchParams) {
+  if (searchParams.get("bestPrices") === "true") return "Best Selling";
   if (searchParams.get("isWeeklyOffer") === "true") return "Weekly Offers";
   if (searchParams.get("isBestSeller") === "true") return "Best Selling";
   if (searchParams.get("isNewArrival") === "true") return "New Arrivals";
@@ -371,7 +372,7 @@ export default function Products() {
       categories: categoryNames,
       brands: selectedBrandSlugs.length > 0 ? [...selectedBrandSlugs].sort() : undefined,
       isWeeklyOffer: wantsWeekly || undefined,
-      isBestSeller: wantsBest || undefined,
+      bestPrices: wantsBest || undefined,
       isNewArrival: wantsNew || undefined,
       isHotDeal: wantsHot || undefined,
       isFastDelivery: wantsFast || undefined,
@@ -447,6 +448,8 @@ export default function Products() {
       ? getLocalizedCategoryName(selectedCategoryChips[0].node, language, t)
       : activeCollection === "Weekly Offers"
         ? t("products.titleWeekly")
+        : activeCollection === "Best Selling"
+          ? t("products.titleBestPrices")
         : t("products.titleAll");
 
   const selectedFilterCount =
@@ -521,7 +524,7 @@ export default function Products() {
   return (
     <div className="bg-[var(--xd-bg)] pb-16 lg:pb-20">
       <SEO page="products" />
-      <Container className="pt-12">
+      <Container wide className="pt-12">
         {/* Page Title */}
         <SectionReveal className="mb-10">
           <p className="mb-3 text-[12px] font-semibold uppercase tracking-[0.18em] text-[var(--xd-gold-text)]">
@@ -633,10 +636,10 @@ export default function Products() {
         </SectionReveal>
 
         {/* Main Products Area */}
-        <div className="flex gap-6 overflow-visible">
+        <div className="flex gap-5 overflow-visible">
           {/* Desktop Sidebar */}
           {showFilters && (
-            <aside className="hidden w-[280px] shrink-0 lg:block">
+            <aside className="hidden w-[240px] shrink-0 lg:block xl:w-[250px]">
               <div className="sticky top-28">
                 <FilterPanel
                   categoryTree={categoryTree}

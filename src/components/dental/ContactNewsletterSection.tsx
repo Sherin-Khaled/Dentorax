@@ -56,7 +56,7 @@ export function ContactNewsletterSection() {
                 X
               </div>
               <span className="font-display font-semibold" style={{ fontSize: 15, color: "var(--xd-text)" }}>
-                X Dental Store
+                Dentorax
               </span>
             </div>
 

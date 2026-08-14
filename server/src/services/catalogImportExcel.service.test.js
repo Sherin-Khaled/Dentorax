@@ -423,7 +423,7 @@ test("provisional price, stock, and manufacturer-verification notes surface as n
   const { batch } = await previewCatalogImportFromExcel(db, { workbookBuffer: buffer, sourceSystem: "EXCEL_IMPORT" });
   const productRow = rowsOf(batch, "PRODUCTS")[0];
   assert.equal(productRow.action, "CREATE", "warnings must not block an otherwise-valid row");
-  assert.match(productRow.validationMessages.join(" "), /requires X Dental review/);
+  assert.match(productRow.validationMessages.join(" "), /requires Dentorax review/);
   assert.match(productRow.validationMessages.join(" "), /provisional staging value/);
   assert.match(productRow.validationMessages.join(" "), /Manufacturer verification is incomplete/);
   const invRow = rowsOf(batch, "INVENTORY")[0];

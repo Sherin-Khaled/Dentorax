@@ -1,4 +1,4 @@
-// Website-managed taxonomy seed data for X Dental Store.
+// Website-managed taxonomy seed data for Dentorax.
 //
 // Brands and categories are owned and managed by the website admin dashboard,
 // NOT by the owner/NewAcc system. This list was compiled on 2026-07-07 using the

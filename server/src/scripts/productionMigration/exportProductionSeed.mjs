@@ -23,11 +23,10 @@
  * see docs/production-database-migration-plan.md):
  *   - Product:      sourceSystem = 'TOOTHPICK_EG' only (excludes the 8
  *                    known local/test product rows)
- *   - Brand:        only brands actually referenced by an exported product
- *   - Category:     only categories actually referenced by an exported
- *                    product, PLUS their full parent-chain ancestry (a
- *                    category can be a parent with no directly-assigned
- *                    products but still be structurally required)
+ *   - Brand:        complete active directory, including zero-product brands
+ *                    such as 3M
+ *   - Category:     complete active taxonomy so directory/navigation records
+ *                    remain available even when no product is directly assigned
  *   - DeliveryZone: the launch-approved bilingual areas synthesized from
  *                    launchBusinessRules.js (excludes local/test zones)
  *   - DeliveryOffer: the five approved Saturday-Wednesday recurring
@@ -36,7 +35,7 @@
  *   - Permission:   all rows — role/permission definitions are system
  *                    configuration, not customer data
  *   - LoyaltyProgramSettings: ONE launch-approved synthesized row with the
- *                    program enabled, 5,000 immediate signup points, and a
+ *                    program enabled, one atomic 5,000-point welcome reward, and a
  *                    5,000 EGP redemption-order minimum.
  *
  * Explicitly excluded (not queried, not exported): local DeliveryOffer rows,
@@ -56,6 +55,11 @@ import {
   LAUNCH_LOYALTY_PROGRAM_SETTINGS,
   buildLaunchDeliverySeedTables,
 } from "../../config/launchBusinessRules.js";
+import {
+  collectCategoryDescendantIds,
+  isFastDeliveryProductRecord,
+  rankBestPriceProducts,
+} from "../../services/launchMerchandising.service.js";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "../../../..");
 const OUTPUT_DIR = path.join(PROJECT_ROOT, "production-seed-export");
@@ -114,10 +118,10 @@ async function main() {
     );
   }
 
-  // --- Brand: only brands actually referenced by an exported product ---
-  const referencedBrandIds = [...new Set(products.map((p) => p.brandId).filter(Boolean))];
+  // --- Brand: complete active approved directory. It is intentionally
+  // independent of public product count so records such as 3M survive. ---
   const brands = await prisma.brand.findMany({
-    where: { id: { in: referencedBrandIds } },
+    where: { status: { not: "INACTIVE" } },
     select: {
       id: true,
       externalBrandId: true,
@@ -134,23 +138,13 @@ async function main() {
     },
     orderBy: { id: "asc" },
   });
-
-  // --- Category: referenced categories + full ancestor chain ---
-  const directCategoryIds = new Set(products.map((p) => p.categoryId).filter(Boolean));
-  const allCategoriesForAncestryWalk = await prisma.category.findMany({
-    select: { id: true, parentId: true },
-  });
-  const categoryById = new Map(allCategoriesForAncestryWalk.map((c) => [c.id, c]));
-  const fullCategoryIdSet = new Set(directCategoryIds);
-  for (const id of directCategoryIds) {
-    let current = categoryById.get(id);
-    while (current?.parentId) {
-      fullCategoryIdSet.add(current.parentId);
-      current = categoryById.get(current.parentId);
-    }
+  if (brands.length !== 607 || !brands.some((brand) => brand.slug === "3m")) {
+    throw new Error(`Expected 607 active brand-directory records including 3M, found ${brands.length}. Investigate before exporting.`);
   }
+
+  // --- Category: complete approved taxonomy, including currently empty nodes.
+  // The storefront category directory must not change shape after seed apply. ---
   const categoriesRaw = await prisma.category.findMany({
-    where: { id: { in: [...fullCategoryIdSet] } },
     select: {
       id: true,
       externalCategoryId: true,
@@ -182,6 +176,19 @@ async function main() {
     orderedCategories.push(cat);
   }
   for (const id of categoriesById.keys()) visitCategory(id);
+  if (orderedCategories.length !== 218) {
+    throw new Error(`Expected exactly 218 launch categories, found ${orderedCategories.length}. Investigate before exporting.`);
+  }
+
+  const validCatalogueSaleProducts = products.filter((product) => {
+    if (product.salePrice === null) return false;
+    const salePrice = Number(product.salePrice);
+    const basePrice = Number(product.price);
+    return salePrice > 0 && salePrice < basePrice;
+  });
+  if (validCatalogueSaleProducts.length !== 2293) {
+    throw new Error(`Expected exactly 2293 valid launch sale-priced products, found ${validCatalogueSaleProducts.length}. Investigate before exporting.`);
+  }
 
   // --- Launch DeliveryZone / DeliveryOffer configuration: synthesized from
   //     reviewed constants, never copied from local promotional test data. ---
@@ -225,6 +232,12 @@ async function main() {
 
   await mkdir(OUTPUT_DIR, { recursive: true });
 
+  const equipmentCategoryIds = collectCategoryDescendantIds(orderedCategories);
+  const bestPriceProducts = rankBestPriceProducts(products);
+  const fastDeliveryProducts = products.filter((product) =>
+    isFastDeliveryProductRecord(product, equipmentCategoryIds)
+  );
+
   const bundle = {
     generatedAt: new Date().toISOString(),
     approvedClassificationDate: "2026-08-12",
@@ -251,6 +264,16 @@ async function main() {
       permission: permissions.length,
       loyaltyProgramSettings: loyaltyProgramSettings.length,
     },
+    merchandisingEligibility: {
+      weeklyOffers: products.filter((product) => product.isWeeklyOffer || (
+        product.salePrice !== null
+        && Number(product.salePrice) > 0
+        && Number(product.salePrice) < Number(product.price)
+      )).length,
+      bestPrices: bestPriceProducts.length,
+      fastDelivery: fastDeliveryProducts.length,
+      fastDeliveryRule: "public purchasable STANDARD products outside Equipment taxonomy and reviewed machine SKU exclusions",
+    },
     checksums: {
       product: checksum(products),
       brand: checksum(brands),
@@ -268,13 +291,16 @@ async function main() {
 
   console.log("=== Production Seed Export (read-only, local DB only) ===");
   console.log(`Product:      ${products.length} (expected 12942)`);
-  console.log(`Brand:        ${brands.length} (referenced by exported products)`);
-  console.log(`Category:     ${orderedCategories.length} (${directCategoryIds.size} directly referenced + ${orderedCategories.length - directCategoryIds.size} ancestor-only)`);
+  console.log(`Brand:        ${brands.length} (complete active directory including 3M)`);
+  console.log(`Category:     ${orderedCategories.length} (complete approved taxonomy)`);
   console.log(`DeliveryZone: ${deliveryZones.length} (launch-approved)`);
   console.log(`DeliveryOffer: ${deliveryOffers.length} recurring free-delivery schedules`);
   console.log(`HeroSlide:    ${heroSlides.length} (expected 3, updatedById forced null)`);
   console.log(`Permission:   ${permissions.length}`);
   console.log(`LoyaltyProgramSettings: ${loyaltyProgramSettings.length} (synthesized, launch-enabled)`);
+  console.log(`Weekly Offers: ${bundle.merchandisingEligibility.weeklyOffers} (explicit assignment or valid catalogue sale price)`);
+  console.log(`Best Prices: ${bundle.merchandisingEligibility.bestPrices} (valid genuine sale prices ranked deterministically)`);
+  console.log(`Fast Delivery: ${bundle.merchandisingEligibility.fastDelivery} (approved taxonomy + reviewed exclusions)`);
   console.log(`\nBundle written to: ${path.join(OUTPUT_DIR, "production-seed-bundle.json")}`);
   console.log("\nNo database was written to. No connection to Supabase or any remote host was made.");
 }

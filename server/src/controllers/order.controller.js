@@ -73,11 +73,11 @@ const STATUS_NOTIFICATION_COPY = {
   },
   PREPARING: {
     title: "Order is being prepared",
-    body: "The X Dental Store team is preparing your order for delivery.",
+    body: "The Dentorax team is preparing your order for delivery.",
   },
   OUT_FOR_DELIVERY: {
     title: "Order is out for delivery",
-    body: "Your order is on the way with the X Dental Store delivery team.",
+    body: "Your order is on the way with the Dentorax delivery team.",
   },
   DELIVERED: {
     title: "Order delivered",
@@ -218,6 +218,13 @@ export function serializeOrder(order) {
             ? {
                 pointsRedeemed,
                 pointsRedemptionValue,
+                welcomePointsRedeemed: Number(loyaltySnapshot.welcomePointsRedeemed ?? 0),
+                welcomeRewardValue: Number(loyaltySnapshot.welcomePointsRedeemed ?? 0)
+                  / Number(loyaltySnapshot.pointsPerRedemptionUnit ?? 100)
+                  * Number(loyaltySnapshot.redemptionValueEgp ?? 10),
+                earnedPointsRedeemed: Number(
+                  loyaltySnapshot.earnedOrAdjustedPointsRedeemed ?? pointsRedeemed
+                ),
                 walletCreditUsed,
                 remainingCodAmount,
                 eligibleEarningAmount: Number(loyaltySnapshot.eligibleEarningAmount ?? 0),
@@ -424,6 +431,7 @@ export async function previewOrderTotals(request, response) {
   const promoCode = cleanText(request.body?.promoCode, 100).toUpperCase();
   const clinicLocationId = cleanText(request.body?.clinicLocationId, 200) || null;
   const requestedPoints = request.body?.requestedPoints ?? 0;
+  const useWelcomeReward = request.body?.useWelcomeReward ?? false;
   const requestedWalletAmount = request.body?.requestedWalletAmount ?? 0;
 
   try {
@@ -439,6 +447,7 @@ export async function previewOrderTotals(request, response) {
         userId: request.user.id,
         pricing: authoritativePricing,
         requestedPoints,
+        useWelcomeReward,
         requestedWalletAmount,
       });
     });
@@ -448,6 +457,7 @@ export async function previewOrderTotals(request, response) {
       promoCode,
       clinicLocationId,
       requestedPoints,
+      useWelcomeReward,
       requestedWalletAmount,
     });
     const pricingQuoteToken = createPricingQuoteToken({
@@ -530,6 +540,7 @@ export async function createOrder(request, response) {
   const promoCode = cleanText(request.body?.promoCode, 100).toUpperCase();
   const clinicLocationId = cleanText(request.body?.clinicLocationId, 200) || null;
   const requestedPoints = request.body?.requestedPoints ?? 0;
+  const useWelcomeReward = request.body?.useWelcomeReward ?? false;
   const requestedWalletAmount = request.body?.requestedWalletAmount ?? 0;
   const pricingQuoteToken = cleanText(request.body?.pricingQuoteToken, 4096);
   const shippingAddressSnapshot = {
@@ -558,6 +569,7 @@ export async function createOrder(request, response) {
     paymentMethod,
     promoCode,
     requestedPoints,
+    useWelcomeReward,
     requestedWalletAmount,
     clinicLocationId,
     items: itemReferences,
@@ -578,6 +590,7 @@ export async function createOrder(request, response) {
           promoCode,
           clinicLocationId,
           requestedPoints,
+          useWelcomeReward,
           requestedWalletAmount,
         });
         const reviewedQuote = verifyPricingQuoteToken(pricingQuoteToken, {
@@ -595,6 +608,7 @@ export async function createOrder(request, response) {
           userId: request.user.id,
           pricing: authoritativePricing,
           requestedPoints,
+          useWelcomeReward,
           requestedWalletAmount,
         });
         if (requiresPriceReview(pricing.totalCents, reviewedQuote.total)) {

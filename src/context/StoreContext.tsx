@@ -17,6 +17,7 @@ import {
   logoutUser,
   registerUser,
   type AuthApiUser,
+  type WelcomePromoResult,
 } from "@/services/auth";
 import {
   normalizeClinicSpecialty,
@@ -97,10 +98,11 @@ type SignUpInput = {
   clinicName?: string;
   clinicSpecialty: string;
   clinicLocations: ClinicLocationInput[];
+  promoCode?: string;
 };
 
 type AuthActionResult =
-  | { success: true }
+  | { success: true; welcomePromo?: WelcomePromoResult }
   | { success: false; message: string };
 
 interface StoreContextType {
@@ -446,11 +448,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     password,
     clinicSpecialty,
     clinicLocations,
+    promoCode,
   }: SignUpInput): Promise<AuthActionResult> => {
     const requestId = ++authRequestId.current;
     const guestItems = cartRef.current;
     const guestWishlistIds = wishlistRef.current;
     const normalizedPhone = cleanOptionalText(phone);
+    const normalizedPromoCode = cleanOptionalText(promoCode);
     clearLegacyPreviewAuthStorage();
     queryClient.clear();
     currentUserRef.current = null;
@@ -458,13 +462,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setIsAuthLoading(true);
 
     try {
-      const user = await registerUser({
+      const { user, welcomePromo } = await registerUser({
         name: fullName.trim(),
         email: normalizeEmail(email),
         password,
         ...(normalizedPhone ? { phone: normalizedPhone } : {}),
         clinicSpecialty: normalizeClinicSpecialty(clinicSpecialty),
         clinicLocations,
+        ...(normalizedPromoCode ? { promoCode: normalizedPromoCode } : {}),
       });
       if (authRequestId.current === requestId) {
         const authenticatedUser = toAuthUser(user);
@@ -489,7 +494,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
         if (authRequestId.current === requestId) setIsAuthLoading(false);
       }
-      return { success: true };
+      return { success: true, welcomePromo };
     } catch (error) {
       if (authRequestId.current === requestId) {
         currentUserRef.current = null;

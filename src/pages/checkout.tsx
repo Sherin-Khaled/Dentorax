@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation, useSearch } from "wouter";
-import { Check, ShieldCheck, Package } from "lucide-react";
+import { Check, Gift, ShieldCheck, Package } from "lucide-react";
 import { DirectionalIcon } from "@/components/DirectionalIcon";
 import { Button } from "@/components/dental/Button";
 import { Container } from "@/components/dental/Container";
@@ -16,6 +16,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { getLocalizedProductName } from "@/lib/catalogTranslations";
 import { ApiError } from "@/services/http";
 import { getCartStockIssues } from "@/lib/cartStock";
+import { getWelcomeRewardProgress } from "@/lib/welcomeRewardPresentation";
 import { useImageFallback } from "@/hooks/use-image-fallback";
 import {
   createOrder,
@@ -320,16 +321,26 @@ function OrderSummary({
                 <dd className="font-bold text-[var(--xd-gold-text)]">−<Money amount={discount} /></dd>
               </div>
             )}
-            {pricing && pricing.pointsRedeemed > 0 && (
+            {pricing && pricing.welcomePointsRedeemed > 0 && (
               <div className="flex items-center justify-between gap-4">
                 <dt className="text-[var(--xd-gold-text)]">
-                  {t("checkout.rewards.pointsRedeemed", { fallback: "Points redeemed" })}
+                  {t("checkout.rewards.welcomeReward", { fallback: "Welcome Reward" })}
+                </dt>
+                <dd className="font-bold text-[var(--xd-gold-text)]">
+                  {"−"}<Money amount={pricing.welcomeRewardValue} />
+                </dd>
+              </div>
+            )}
+            {pricing && pricing.earnedPointsRedeemed > 0 && (
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-[var(--xd-gold-text)]">
+                  {t("checkout.rewards.pointsRedeemed", { fallback: "Earned points redeemed" })}
                   <span className="ms-1 text-[11px] text-[#8A8D9A]">
-                    ({pricing.pointsRedeemed.toLocaleString("en-US")})
+                    ({pricing.earnedPointsRedeemed.toLocaleString("en-US")})
                   </span>
                 </dt>
                 <dd className="font-bold text-[var(--xd-gold-text)]">
-                  −<Money amount={pricing.pointsRedemptionValue} />
+                  {"−"}<Money amount={pricing.pointsRedemptionValue - pricing.welcomeRewardValue} />
                 </dd>
               </div>
             )}
@@ -658,6 +669,7 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodId>("cash");
   const [selectedClinicLocationId, setSelectedClinicLocationId] = useState<string>("");
   const [requestedPoints, setRequestedPoints] = useState(0);
+  const [useWelcomeReward, setUseWelcomeReward] = useState(false);
   const [requestedWalletAmount, setRequestedWalletAmount] = useState("0");
   const [deliveryErrors, setDeliveryErrors] = useState<Partial<Record<DeliveryFieldId, string>>>({});
   const [paymentErrors, setPaymentErrors] = useState<Partial<Record<PaymentFieldId, string>>>({});
@@ -674,6 +686,11 @@ export default function Checkout() {
   const checkoutItems = cart;
   const cartStockIssues = useMemo(() => getCartStockIssues(cart), [cart]);
   const subtotal = cartTotal;
+  const welcomeRewardProgress = getWelcomeRewardProgress(
+    trustedTotals?.eligibleProductSubtotal ?? 0,
+    trustedTotals?.welcomeMinimumSubtotal ?? 5_000
+  );
+  const welcomeRewardApplied = Boolean(trustedTotals?.welcomeRewardApplied);
   const selectedShippingMethod =
     shippingMethods.find((method) => method.id === shippingMethod);
   const selectedPaymentMethod =
@@ -718,6 +735,7 @@ export default function Checkout() {
       paymentMethod,
       promoCode,
       requestedPoints,
+      useWelcomeReward,
       requestedWalletAmount,
       clinicLocationId: selectedClinicLocationId || null,
       items: cart.map((item) => ({
@@ -728,7 +746,7 @@ export default function Checkout() {
         quantity: item.quantity,
       })),
     }),
-    [cart, form, orderNotes, paymentMethod, promoCode, requestedPoints, requestedWalletAmount, selectedClinicLocationId, shippingMethod]
+    [cart, form, orderNotes, paymentMethod, promoCode, requestedPoints, requestedWalletAmount, selectedClinicLocationId, shippingMethod, useWelcomeReward]
   );
   const checkoutFingerprint = useMemo(
     () => fingerprintCheckoutAttempt(checkoutOrderInput),
@@ -765,6 +783,7 @@ export default function Checkout() {
         setPaymentMethod("cash");
         setSelectedClinicLocationId("");
         setRequestedPoints(0);
+        setUseWelcomeReward(false);
         setRequestedWalletAmount("0");
       }
       autofilledUserId.current = null;
@@ -802,6 +821,7 @@ export default function Checkout() {
       setPaymentMethod("cash");
       setSelectedClinicLocationId("");
       setRequestedPoints(0);
+      setUseWelcomeReward(false);
       setRequestedWalletAmount("0");
     } else {
       setForm((current) =>
@@ -884,6 +904,7 @@ export default function Checkout() {
         })),
         promoCode,
         requestedPoints,
+        useWelcomeReward,
         requestedWalletAmount,
         clinicLocationId: selectedClinicLocationId || null,
       },
@@ -891,7 +912,7 @@ export default function Checkout() {
     )
       .then((totals) => {
         setTrustedTotals(totals);
-        if (requestedPoints > 0 || Number(requestedWalletAmount) > 0) {
+        if (requestedPoints > 0 || useWelcomeReward || Number(requestedWalletAmount) > 0) {
           setStatusMessage(null);
         }
       })
@@ -911,7 +932,7 @@ export default function Checkout() {
             setLocation("/cart?checkout=stock", { replace: true });
             return;
           }
-          if (promoCode || requestedPoints > 0 || Number(requestedWalletAmount) > 0) {
+          if (promoCode || requestedPoints > 0 || useWelcomeReward || Number(requestedWalletAmount) > 0) {
             setStatusMessage(
               error instanceof ApiError ? error.message : t("cart.couponInvalid")
             );
@@ -919,7 +940,7 @@ export default function Checkout() {
         }
       });
     return () => controller.abort();
-  }, [cart, isAuthenticated, promoCode, requestedPoints, requestedWalletAmount, selectedClinicLocationId, shippingMethod, t]);
+  }, [cart, isAuthenticated, promoCode, requestedPoints, requestedWalletAmount, selectedClinicLocationId, shippingMethod, t, useWelcomeReward]);
 
   const displayedSubtotal = trustedTotals?.subtotal ?? subtotal;
   const displayedShipping = trustedTotals?.shipping ?? shipping;
@@ -1537,18 +1558,127 @@ export default function Checkout() {
                   fallback: "Rewards & Wallet",
                 })}
               >
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid gap-5 md:grid-cols-[minmax(0,2fr)_minmax(260px,1fr)]">
                   <div className="rounded-[16px] border border-[var(--xd-gold-border-soft)] bg-[var(--xd-gold-bg-soft)]/40 p-4">
-                    <div className="flex items-start justify-between gap-3">
+                    {Boolean(trustedTotals?.welcomePointsAvailable) && (
+                      <div
+                        data-testid="welcome-reward-panel"
+                        data-state={welcomeRewardApplied ? "applied" : trustedTotals?.welcomePointsEligible ? "eligible" : "locked"}
+                        className="rounded-[14px] border border-[var(--xd-gold-border)] bg-white/75 p-4 dark:bg-white/[0.04]"
+                      >
+                        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                          <div className="flex min-w-0 flex-1 items-start gap-3">
+                            <span className={cn(
+                              "flex size-10 shrink-0 items-center justify-center rounded-xl border",
+                              welcomeRewardApplied
+                                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                                : "border-[var(--xd-gold-border-soft)] bg-[var(--xd-gold-bg-soft)] text-[var(--xd-gold-text)]"
+                            )} aria-hidden="true">
+                              {welcomeRewardApplied ? <Check className="size-5" strokeWidth={2.5} /> : <Gift className="size-5" />}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[14px] font-black text-[#050505] dark:text-[#F7F2E6]">
+                                {t("checkout.rewards.welcomeTitle", {
+                                  fallback: "{points} Welcome Points",
+                                  values: { points: (trustedTotals?.welcomeRewardPoints ?? 5_000).toLocaleString("en-US") },
+                                })}
+                              </p>
+                              <p className="mt-0.5 text-[12px] font-bold text-[var(--xd-gold-text)]">
+                                {t("checkout.rewards.welcomeWorth", {
+                                  fallback: "Worth {amount}",
+                                  values: { amount: formatCurrency(trustedTotals?.welcomeRewardValue ?? 500) },
+                                })}
+                              </p>
+                              <p className="mt-2 text-[12px] font-semibold leading-5 text-[#5F5F5F] dark:text-[#D6D0C3]">
+                                {welcomeRewardApplied
+                                  ? t("checkout.rewards.amountSaved", {
+                                      fallback: "{amount} saved",
+                                      values: { amount: formatCurrency(trustedTotals?.welcomeRewardValue ?? 0) },
+                                    })
+                                  : trustedTotals?.welcomePointsEligible
+                                    ? t("checkout.rewards.welcomeReady", { fallback: "Your welcome reward is ready." })
+                                    : t("checkout.rewards.welcomeLockedRemaining", {
+                                        fallback: "Add {amount} more to unlock your welcome reward.",
+                                        values: { amount: formatCurrency(welcomeRewardProgress.remaining) },
+                                      })}
+                              </p>
+                              {!trustedTotals?.welcomePointsEligible && (
+                                <div className="mt-3" data-testid="welcome-reward-progress">
+                                  <div className="mb-1.5 flex items-center justify-between gap-3 text-[11px] font-bold text-[#717182] dark:text-[#C6BEAE]">
+                                    <span>{formatCurrency(welcomeRewardProgress.current)}</span>
+                                    <span>{formatCurrency(welcomeRewardProgress.target)}</span>
+                                  </div>
+                                  <div
+                                    role="progressbar"
+                                    aria-valuemin={0}
+                                    aria-valuemax={welcomeRewardProgress.target}
+                                    aria-valuenow={Math.min(welcomeRewardProgress.current, welcomeRewardProgress.target)}
+                                    className="h-1.5 overflow-hidden rounded-full bg-[#050505]/10 dark:bg-white/10"
+                                  >
+                                    <span
+                                      className="block h-full rounded-full bg-[#D0A800] transition-[width] duration-300"
+                                      style={{ width: `${welcomeRewardProgress.percentage}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex shrink-0 flex-col gap-1.5 md:w-[174px]">
+                            {welcomeRewardApplied ? (
+                              <>
+                                <div className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 text-[12px] font-black text-emerald-800 dark:text-emerald-200">
+                                  <Check className="size-4" aria-hidden="true" />
+                                  {t("checkout.rewards.rewardApplied", { fallback: "Reward applied" })}
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setUseWelcomeReward(false)}
+                                  className="min-h-9 text-[11px] font-bold text-[#717182] underline-offset-2 hover:text-[#050505] hover:underline dark:text-[#C6BEAE] dark:hover:text-white"
+                                >
+                                  {t("checkout.rewards.removeWelcome", { fallback: "Remove reward" })}
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  disabled={!trustedTotals?.welcomeRewardAvailable || !trustedTotals?.welcomePointsEligible}
+                                  onClick={() => setUseWelcomeReward(true)}
+                                  className="min-h-11 w-full rounded-xl bg-[#F9DC5C] px-3 text-[12px] font-black text-[#050505] transition hover:bg-[#F2D24B] disabled:cursor-not-allowed disabled:border disabled:border-[#050505]/10 disabled:bg-[#050505]/5 disabled:text-[#8A8D9A] dark:disabled:border-white/10 dark:disabled:bg-white/[0.04] dark:disabled:text-[#9E988C]"
+                                >
+                                  {trustedTotals?.welcomePointsEligible
+                                    ? t("checkout.rewards.useWelcome", {
+                                        fallback: "Use {points} Points",
+                                        values: { points: (trustedTotals?.welcomeRewardPoints ?? 0).toLocaleString("en-US") },
+                                      })
+                                    : t("checkout.rewards.unlockWelcome", { fallback: "Unlock at EGP 5,000" })}
+                                </button>
+                                {trustedTotals?.welcomePointsEligible && (
+                                  <span className="text-center text-[11px] font-bold text-[var(--xd-gold-text)]">
+                                    {t("checkout.rewards.saveAmount", {
+                                      fallback: "Save {amount}",
+                                      values: { amount: formatCurrency(trustedTotals?.welcomeRewardValue ?? 0) },
+                                    })}
+                                  </span>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <div className={trustedTotals?.welcomePointsAvailable ? "mt-4 border-t border-[#050505]/10 pt-4 dark:border-white/10" : "flex items-start justify-between gap-3"}>
+                      <div className={trustedTotals?.welcomePointsAvailable ? "flex items-start justify-between gap-3" : "contents"}>
                       <div>
                         <label htmlFor="requestedPoints" className="text-[13px] font-bold text-[#050505] dark:text-[#F7F2E6]">
-                          {t("checkout.rewards.pointsLabel", { fallback: "Redeem reward points" })}
+                          {t("checkout.rewards.earnedPointsLabel", { fallback: "Redeem earned points" })}
                         </label>
                         <p className="mt-1 text-[12px] leading-5 text-[#717182] dark:text-[#C6BEAE]">
                           {t("checkout.rewards.pointsAvailable", {
                             fallback: "{points} available · maximum {maximum}",
                             values: {
-                              points: trustedTotals?.availablePoints?.toLocaleString("en-US") ?? "0",
+                              points: trustedTotals?.earnedPointsAvailable?.toLocaleString("en-US") ?? "0",
                               maximum: trustedTotals?.maximumRedeemablePoints?.toLocaleString("en-US") ?? "0",
                             },
                           })}
@@ -1562,6 +1692,7 @@ export default function Checkout() {
                       >
                         {t("checkout.rewards.useMaximum", { fallback: "Use maximum" })}
                       </button>
+                      </div>
                     </div>
                     {trustedTotals?.maximumRedeemablePoints ? <input
                       id="requestedPoints"
@@ -1575,22 +1706,12 @@ export default function Checkout() {
                         setRequestedPoints(Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0);
                       }}
                       className={`mt-3 ${inputClassName}`}
-                    /> : <p className="mt-3 rounded-[12px] bg-white/60 px-3 py-2.5 text-[12px] font-semibold text-[#717182] dark:bg-white/[0.04] dark:text-[#C6BEAE]">{t("checkout.rewards.pointsUnavailable", { fallback: "No reward points are usable for this checkout yet." })}</p>}
+                    /> : <p className="mt-3 rounded-[12px] bg-white/60 px-3 py-2.5 text-[12px] font-semibold text-[#717182] dark:bg-white/[0.04] dark:text-[#C6BEAE]">{t("checkout.rewards.earnedPointsUnavailable", { fallback: "No earned points are usable for this checkout yet." })}</p>}
                       <p className="mt-2 text-[11px] leading-4 text-[#8A8D9A] dark:text-[#BDB6A8]">
                         {t("checkout.rewards.pointsRule", {
                           fallback: "100 points = EGP 10. Points apply to products only and cannot pay shipping.",
                         })}
                       </p>
-                      {trustedTotals && (
-                        <p className="mt-1 text-[11px] leading-4 text-[#8A8D9A] dark:text-[#BDB6A8]">
-                          {t("checkout.rewards.pointsMinimumRule", {
-                            fallback: "Points can be redeemed on orders of EGP {minimum} or more.",
-                            values: {
-                              minimum: trustedTotals.welcomeMinimumSubtotal,
-                            },
-                          })}
-                        </p>
-                      )}
                   </div>
 
                   <div className="rounded-[16px] border border-[var(--xd-gold-border-soft)] bg-[var(--xd-gold-bg-soft)]/40 p-4">

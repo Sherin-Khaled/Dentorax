@@ -34,6 +34,22 @@ test("audit planning uses exact SKU matching, rejects unknowns and duplicates, a
   assert.deepEqual(rows.map((row) => row.status), ["SKIPPED_ALREADY_CORRECT", "ERROR_UNKNOWN_SKU", "ERROR_DUPLICATE_SKU", "ERROR_DUPLICATE_SKU"]);
 });
 
+test("audit planning can restrict updates to the approved source catalogue", () => {
+  const candidates = [{
+    sku: "XD-TP-1",
+    sourceFile: "XD-TP-1__main.webp",
+    publicUrl: "https://cdn.example.com/XD-TP-1__main.webp",
+    mode: "external",
+  }];
+  const rows = buildAuditPlan(candidates, [{
+    id: "p1",
+    sku: "XD-TP-1",
+    imageUrl: null,
+    sourceSystem: "LOCAL_CATALOG",
+  }], { requiredSourceSystem: "TOOTHPICK_EG" });
+  assert.equal(rows[0].status, "ERROR_WRONG_SOURCE_SYSTEM");
+});
+
 test("external CSV URLs must be credential-free HTTPS URLs", () => {
   assert.equal(validateExternalImageUrl("https://cdn.example.com/a.webp"), "https://cdn.example.com/a.webp");
   assert.equal(validateExternalImageUrl("http://cdn.example.com/a.webp"), null);

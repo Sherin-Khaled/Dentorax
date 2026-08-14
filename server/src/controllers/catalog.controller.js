@@ -1,5 +1,10 @@
 import { prisma } from "../config/db.js";
 import { resolveEffectiveProductPrices } from "../services/flashSalePricing.service.js";
+import {
+  buildFastDeliveryWhere,
+  collectCategoryDescendantIds,
+  rankBestPriceProducts,
+} from "../services/launchMerchandising.service.js";
 import { cleanText } from "../utils/records.js";
 import {
   getVariantSelectedOptions,
@@ -86,7 +91,9 @@ export function serializePublicProduct(
     shortDescription: product.shortDescription ?? null,
     shortDescriptionAr: product.shortDescriptionAr ?? null,
     featured: product.featured,
-    isWeeklyOffer: product.isWeeklyOffer,
+    // A valid catalogue sale price is the authoritative launch source for
+    // Weekly Offers. Explicit admin assignments remain supported as well.
+    isWeeklyOffer: product.isWeeklyOffer || pricing?.salePrice != null,
     isBestSeller: product.isBestSeller,
     isNewArrival: product.isNewArrival,
     isHotDeal: product.isHotDeal,
@@ -274,6 +281,16 @@ export function buildPriceFilter(priceMin, priceMax) {
   return { not: null, ...(priceMin !== null ? { gte: priceMin } : {}), ...(priceMax !== null ? { lte: priceMax } : {}) };
 }
 
+export function buildWeeklyOfferFilter(value) {
+  if (value === true) {
+    return { OR: [{ isWeeklyOffer: true }, { salePrice: { not: null } }] };
+  }
+  if (value === false) {
+    return { AND: [{ isWeeklyOffer: false }, { salePrice: null }] };
+  }
+  return null;
+}
+
 export async function getPublicProducts(request, response) {
   const search = cleanText(request.query?.search, 120);
   const status = cleanText(request.query?.status, 50).toUpperCase();
@@ -290,13 +307,22 @@ export async function getPublicProducts(request, response) {
   }
   const merchandisingFilters = ["isWeeklyOffer", "isBestSeller", "isNewArrival", "isHotDeal", "isFastDelivery"];
   const merchandisingValues = {};
+  let weeklyOfferValue = null;
+  let fastDeliveryValue = null;
   for (const field of merchandisingFilters) {
     const value = cleanText(request.query?.[field], 10).toLowerCase();
     if (value && !["true", "false"].includes(value)) {
       return response.status(400).json({ message: `${field} must be true or false.` });
     }
-    if (value) merchandisingValues[field] = value === "true";
+    if (value && field === "isWeeklyOffer") weeklyOfferValue = value === "true";
+    else if (value && field === "isFastDelivery") fastDeliveryValue = value === "true";
+    else if (value) merchandisingValues[field] = value === "true";
   }
+  const bestPricesText = cleanText(request.query?.bestPrices, 10).toLowerCase();
+  if (bestPricesText && !["true", "false"].includes(bestPricesText)) {
+    return response.status(400).json({ message: "bestPrices must be true or false." });
+  }
+  const bestPricesValue = bestPricesText ? bestPricesText === "true" : null;
   const hasDiscountText = cleanText(request.query?.hasDiscount, 10).toLowerCase();
   if (hasDiscountText && !["true", "false"].includes(hasDiscountText)) {
     return response.status(400).json({ message: "hasDiscount must be true or false." });
@@ -324,7 +350,7 @@ export async function getPublicProducts(request, response) {
   const brandFilters = queryList(request.query?.brands);
   const legacyCategoryFilter =
     cleanText(request.query?.subcategory, 180) || cleanText(request.query?.category, 180);
-  const [categoryNames, brandNames] = await Promise.all([
+  const [categoryNames, brandNames, taxonomyCategories] = await Promise.all([
     categoryFilters.length > 0
       ? resolveCategoryFilterNames(categoryFilters, {
           includeDescendants: false,
@@ -339,10 +365,28 @@ export async function getPublicProducts(request, response) {
       : resolveCatalogFilter("brand", request.query?.brand).then((brand) =>
           brand ? [brand] : null
         ),
+    fastDeliveryValue !== null
+      ? prisma.category.findMany({ select: { id: true, slug: true, parentId: true } })
+      : Promise.resolve([]),
   ]);
   const page = Math.max(Number.parseInt(request.query?.page, 10) || 1, 1);
   const limit = Math.min(Math.max(Number.parseInt(request.query?.limit, 10) || 24, 1), 100);
   const priceFilter = buildPriceFilter(priceMin, priceMax);
+  const andFilters = [
+    availability,
+    buildWeeklyOfferFilter(weeklyOfferValue),
+    fastDeliveryValue === true
+      ? buildFastDeliveryWhere(collectCategoryDescendantIds(taxonomyCategories))
+      : null,
+    bestPricesValue === true
+      ? {
+          purchaseMode: "STANDARD",
+          isAvailable: true,
+          status: { in: ["ACTIVE", "LOW_STOCK"] },
+          salePrice: { not: null },
+        }
+      : null,
+  ].filter(Boolean);
   const where = {
     status: status || { in: [...PUBLIC_PRODUCT_STATUSES] },
     price: priceFilter,
@@ -352,7 +396,7 @@ export async function getPublicProducts(request, response) {
     ...(featuredText ? { featured: featuredText === "true" } : {}),
     ...merchandisingValues,
     ...(hasDiscountText ? { salePrice: hasDiscountText === "true" ? { not: null } : null } : {}),
-    ...(availability ? { AND: [availability] } : {}),
+    ...(andFilters.length > 0 ? { AND: andFilters } : {}),
     ...(search ? {
       OR: [
         { name: { contains: search, mode: "insensitive" } },
@@ -364,22 +408,46 @@ export async function getPublicProducts(request, response) {
     } : {}),
   };
 
-  const [products, total, lookups] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      include: publicProductInclude,
-      orderBy: PRODUCT_SORT_ORDER_BY[sortKey],
-      skip: ids.length > 0 ? 0 : (page - 1) * limit,
-      take: ids.length > 0 ? ids.length : limit,
-    }),
-    prisma.product.count({ where }),
-    publicLookups(),
-  ]);
+  let products;
+  let total;
+  let lookups;
+  if (bestPricesValue === true && ids.length === 0) {
+    const [candidates, nextLookups] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        select: { id: true, sku: true, price: true, salePrice: true, purchaseMode: true, isAvailable: true, status: true },
+      }),
+      publicLookups(),
+    ]);
+    const ranked = rankBestPriceProducts(candidates);
+    total = ranked.length;
+    const pageIds = ranked.slice((page - 1) * limit, page * limit).map((product) => product.id);
+    const pageProducts = pageIds.length > 0
+      ? await prisma.product.findMany({ where: { id: { in: pageIds } }, include: publicProductInclude })
+      : [];
+    const productById = new Map(pageProducts.map((product) => [product.id, product]));
+    products = pageIds.map((id) => productById.get(id)).filter(Boolean);
+    lookups = nextLookups;
+  } else {
+    [products, total, lookups] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: publicProductInclude,
+        orderBy: PRODUCT_SORT_ORDER_BY[sortKey],
+        skip: ids.length > 0 ? 0 : (page - 1) * limit,
+        take: ids.length > 0 ? ids.length : limit,
+      }),
+      prisma.product.count({ where }),
+      publicLookups(),
+    ]);
+  }
   const pricingByProductId = await resolveEffectiveProductPrices(prisma, products);
   return response.json({
     products: products.map((product) =>
       serializePublicProduct(
-        product,
+        fastDeliveryValue === true && !product.isFastDelivery
+          ? { ...product, isFastDelivery: true }
+          : product,
         lookups.brandByName,
         lookups.categoryByName,
         pricingByProductId
@@ -528,7 +596,12 @@ export async function getPublicBrands(_request, response) {
     }),
   ]);
   const brandByName = recordByName(brands);
+  const publicProductCountByBrand = new Map(
+    groups.map((group) => [group.brand?.trim().toLowerCase(), group._count._all])
+  );
   const results = brands
+    // The Brands page is an approved directory. Active records remain visible
+    // even when they currently have no public products (for example 3M).
     .filter((brand) => brand.status !== "INACTIVE")
     .map((brand) => ({
       id: brand.id,
@@ -538,7 +611,7 @@ export async function getPublicBrands(_request, response) {
       logoUrl: brand.logoUrl ?? null,
       description: brand.description ?? null,
       featured: brand.featured,
-      productCount: groups.find((group) => group.brand?.toLowerCase() === brand.name.toLowerCase())?._count._all ?? 0,
+      productCount: publicProductCountByBrand.get(brand.name.trim().toLowerCase()) ?? 0,
     }));
   for (const group of groups) {
     if (!group.brand || brandByName.has(group.brand.toLowerCase())) continue;

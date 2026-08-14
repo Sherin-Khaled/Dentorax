@@ -34,7 +34,7 @@ SMTP_SECURE=<true or false as required by that port>
 SMTP_USER=<company mailbox username>
 SMTP_PASS=<mailbox app password>
 
-MAIL_FROM_NAME=X Dental Store
+MAIL_FROM_NAME=Dentorax
 MAIL_FROM_EMAIL=<company sender mailbox>
 COMPANY_NOTIFICATION_EMAIL=<default company recipient>
 

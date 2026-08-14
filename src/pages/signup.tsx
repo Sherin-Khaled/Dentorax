@@ -8,6 +8,7 @@ import {
   Phone,
   ShieldCheck,
   Stethoscope,
+  Tag,
   UserRound,
 } from "lucide-react";
 import { DirectionalIcon } from "@/components/DirectionalIcon";
@@ -90,6 +91,7 @@ export default function Signup() {
     email: "",
     password: "",
     confirmPassword: "",
+    promoCode: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -185,6 +187,7 @@ export default function Signup() {
       })),
       email: formData.email,
       password: formData.password,
+      promoCode: formData.promoCode,
     });
 
     if (!result.success) {
@@ -197,10 +200,27 @@ export default function Signup() {
       return;
     }
 
-    toast({
-      title: t("auth.signup.toastTitle"),
-      description: t("auth.signup.toastDescription"),
-    });
+    if (result.welcomePromo?.status === "granted") {
+      toast({
+        title: t("auth.signup.toastTitle"),
+        description: t("auth.signup.promoCodeAppliedToast", {
+          fallback: "{points} promotional points added to your account.",
+          values: { points: (result.welcomePromo.points ?? 0).toLocaleString("en-US") },
+        }),
+      });
+    } else if (result.welcomePromo?.status === "invalid" && formData.promoCode.trim()) {
+      toast({
+        title: t("auth.signup.toastTitle"),
+        description: t("auth.signup.promoCodeInvalidToast", {
+          fallback: "Account created. That promo code wasn't valid, so no promotional points were added.",
+        }),
+      });
+    } else {
+      toast({
+        title: t("auth.signup.toastTitle"),
+        description: t("auth.signup.toastDescription"),
+      });
+    }
 
     navigate("/account/dashboard");
   };
@@ -236,7 +256,7 @@ export default function Signup() {
                 X
               </span>
               <span className="font-display text-[15px] font-semibold tracking-tight">
-                X Dental Store
+                Dentorax
               </span>
             </Link>
 
@@ -484,6 +504,27 @@ export default function Signup() {
                   >
                     {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </Button>
+                </span>
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-[11px] font-bold uppercase tracking-[0.09em] text-[#3A3A3A]">
+                  {t("auth.signup.promoCode", { fallback: "Promo code (optional)" })}
+                </span>
+                <span className="relative block">
+                  <Tag className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--xd-gold-text)]" size={16} />
+                  <input
+                    type="text"
+                    value={formData.promoCode}
+                    onChange={(event) => updateField("promoCode", event.target.value)}
+                    className={inputClassName}
+                    placeholder={t("auth.signup.promoCodePlaceholder", {
+                      fallback: "Enter a promo code, if you have one",
+                    })}
+                    maxLength={40}
+                    autoComplete="off"
+                    data-testid="input-promo-code"
+                  />
                 </span>
               </label>
 

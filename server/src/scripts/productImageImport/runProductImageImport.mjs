@@ -11,6 +11,8 @@ import { validateProductImage } from "../../services/productImageStorage.service
 import {
   buildAuditPlan,
   deriveSkuFromFilename,
+  EXPECTED_FALLBACK_SKUS,
+  EXPECTED_IMAGE_TOTAL,
   mapWithConcurrency,
   objectKeyForSku,
   publicUrlForObject,
@@ -30,13 +32,14 @@ function parseArguments(argv) {
     const argument = argv[index];
     if (argument === "--confirm-apply") options.confirmApply = true;
     else if (argument === "--verify-coverage") options.verifyCoverage = true;
-    else if (["--image-dir", "--csv", "--audit-dir", "--concurrency"].includes(argument)) {
+    else if (["--image-dir", "--csv", "--audit-dir", "--concurrency", "--public-base-url"].includes(argument)) {
       const value = argv[++index];
       if (!value) throw new Error(`${argument} requires a value.`);
       if (argument === "--image-dir") options.imageDir = path.resolve(value);
       if (argument === "--csv") options.csvPath = path.resolve(value);
       if (argument === "--audit-dir") options.auditDir = path.resolve(value);
       if (argument === "--concurrency") options.concurrency = Number(value);
+      if (argument === "--public-base-url") options.publicBaseUrl = value;
     } else throw new Error(`Unknown argument: ${argument}`);
   }
   if (!options.auditDir) throw new Error("--audit-dir is required so generated audits stay outside source control.");
@@ -88,7 +91,7 @@ async function imageCandidates(imageDir, configuration, concurrency) {
   });
 }
 
-async function externalCandidates(csvPath) {
+async function externalCandidates(csvPath, publicBaseUrl) {
   const rows = parse(await readFile(csvPath, "utf8"), {
     bom: true,
     columns: true,
@@ -96,17 +99,25 @@ async function externalCandidates(csvPath) {
     trim: true,
   });
   return rows.map((row, index) => {
-    const sku = typeof row.SKU === "string" ? row.SKU.trim() : "";
-    const publicUrl = validateExternalImageUrl(row.image_url);
+    const filename = typeof row.filename === "string" ? row.filename.trim() : "";
+    const sku = filename
+      ? path.basename(filename) === filename && deriveSkuFromFilename(filename)
+      : typeof row.SKU === "string" ? row.SKU.trim() : "";
+    const imageUrl = filename && publicBaseUrl
+      ? publicUrlForObject(publicBaseUrl, filename)
+      : row.image_url;
+    const publicUrl = validateExternalImageUrl(imageUrl);
     return {
       sku,
-      sourceFile: `${csvPath}#row-${index + 2}`,
+      sourceFile: filename || `${csvPath}#row-${index + 2}`,
       objectKey: "",
       publicUrl: publicUrl ?? "",
       mode: "external",
       ...(!sku || !publicUrl ? {
         status: "ERROR_INVALID_CSV_ROW",
-        error: "CSV rows require exact SKU and an absolute HTTPS image_url.",
+        error: filename
+          ? "filename must match XD-TP-[ID]__main.webp exactly and --public-base-url must be valid HTTPS."
+          : "CSV rows require exact SKU and an absolute HTTPS image_url.",
       } : {}),
     };
   });
@@ -174,19 +185,40 @@ async function main() {
       if (configuration.driver !== "s3") throw new Error("Image-directory mode requires the existing S3 upload storage configuration.");
       candidates = await imageCandidates(options.imageDir, configuration, options.concurrency);
     } else {
-      candidates = await externalCandidates(options.csvPath);
+      candidates = await externalCandidates(options.csvPath, options.publicBaseUrl);
     }
 
     const uniqueSkus = [...new Set(candidates.map((candidate) => candidate.sku).filter(Boolean))];
     const products = await prisma.product.findMany({
       where: { sku: { in: uniqueSkus } },
-      select: { id: true, sku: true, imageUrl: true },
+      select: { id: true, sku: true, imageUrl: true, sourceSystem: true },
     });
-    let auditRows = buildAuditPlan(candidates, products);
+    let auditRows = buildAuditPlan(candidates, products, { requiredSourceSystem: "TOOTHPICK_EG" });
     const validationErrors = auditRows.filter((row) => row.status.startsWith("ERROR"));
-    if (options.confirmApply && validationErrors.length > 0) {
-      const outputs = await writeAudit(options.auditDir, auditRows, { mode: "APPLY_REJECTED" });
-      console.error(`Apply rejected: ${validationErrors.length} invalid/unknown/duplicate input row(s). Audit: ${outputs.jsonPath}`);
+    const catalogueProducts = await prisma.product.findMany({
+      where: { sourceSystem: "TOOTHPICK_EG" },
+      select: { sku: true },
+    });
+    const inputSkuSet = new Set(candidates.map((candidate) => candidate.sku).filter(Boolean));
+    const missingSkus = catalogueProducts
+      .map((product) => product.sku)
+      .filter((sku) => sku && !inputSkuSet.has(sku))
+      .sort();
+    const expectedMissing = [...EXPECTED_FALLBACK_SKUS].sort();
+    const launchInputSummary = {
+      candidateRows: candidates.length,
+      uniqueSkus: inputSkuSet.size,
+      matchedToothpickProducts: auditRows.filter((row) => !row.status.startsWith("ERROR")).length,
+      missingSkus,
+      ok:
+        candidates.length === EXPECTED_IMAGE_TOTAL
+        && inputSkuSet.size === EXPECTED_IMAGE_TOTAL
+        && validationErrors.length === 0
+        && JSON.stringify(missingSkus) === JSON.stringify(expectedMissing),
+    };
+    if (options.confirmApply && !launchInputSummary.ok) {
+      const outputs = await writeAudit(options.auditDir, auditRows, { mode: "APPLY_REJECTED", launchInputSummary });
+      console.error(`Apply rejected: launch image invariants failed. Audit: ${outputs.jsonPath}`);
       process.exitCode = 1;
       return;
     }
@@ -211,7 +243,12 @@ async function main() {
             if (Number(head.ContentLength) !== candidate.buffer.length) throw new Error("Uploaded object size verification failed.");
           }
           const updated = await prisma.product.updateMany({
-            where: { id: row.productId, sku: row.SKU, imageUrl: row.previous_image_url || null },
+            where: {
+              id: row.productId,
+              sku: row.SKU,
+              sourceSystem: "TOOTHPICK_EG",
+              imageUrl: row.previous_image_url || null,
+            },
             data: { imageUrl: row.new_image_url },
           });
           if (updated.count !== 1) throw new Error("Product.imageUrl changed concurrently; no database update was applied.");
@@ -225,10 +262,11 @@ async function main() {
     const outputs = await writeAudit(options.auditDir, auditRows, {
       mode: options.confirmApply ? "APPLY" : "DRY_RUN",
       inputMode: options.imageDir ? "IMAGE_DIRECTORY" : "EXTERNAL_CSV",
+      launchInputSummary,
     });
     const counts = Object.fromEntries([...new Set(auditRows.map((row) => row.status))].map((status) => [status, auditRows.filter((row) => row.status === status).length]));
-    console.log(JSON.stringify({ mode: options.confirmApply ? "APPLY" : "DRY_RUN", counts, audit: outputs }, null, 2));
-    if (auditRows.some((row) => row.status.startsWith("ERROR"))) process.exitCode = 1;
+    console.log(JSON.stringify({ mode: options.confirmApply ? "APPLY" : "DRY_RUN", counts, launchInputSummary, audit: outputs }, null, 2));
+    if (!launchInputSummary.ok || auditRows.some((row) => row.status.startsWith("ERROR"))) process.exitCode = 1;
   } finally {
     await prisma.$disconnect();
   }

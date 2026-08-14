@@ -32,7 +32,7 @@ export function validateExternalImageUrl(value) {
   }
 }
 
-export function buildAuditPlan(candidates, products) {
+export function buildAuditPlan(candidates, products, { requiredSourceSystem } = {}) {
   const productsBySku = new Map(products.map((product) => [product.sku, product]));
   const countBySku = new Map();
   for (const candidate of candidates) {
@@ -55,6 +55,13 @@ export function buildAuditPlan(candidates, products) {
     if ((countBySku.get(candidate.sku) ?? 0) > 1) return { ...base, status: "ERROR_DUPLICATE_SKU", error: "More than one input claims this exact SKU." };
     const product = productsBySku.get(candidate.sku);
     if (!product) return { ...base, status: "ERROR_UNKNOWN_SKU", error: "No Product has this exact SKU." };
+    if (requiredSourceSystem && product.sourceSystem !== requiredSourceSystem) {
+      return {
+        ...base,
+        status: "ERROR_WRONG_SOURCE_SYSTEM",
+        error: `Product is not owned by ${requiredSourceSystem}.`,
+      };
+    }
     const previous = product.imageUrl ?? "";
     if (previous === candidate.publicUrl) {
       return { ...base, previous_image_url: previous, status: "SKIPPED_ALREADY_CORRECT" };

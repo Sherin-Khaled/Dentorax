@@ -120,10 +120,17 @@ export function OrderPricingBreakdown({
           discount
         />
       )}
-      {order.pointsRedeemed > 0 && (
+      {(pricing.loyalty?.welcomePointsRedeemed ?? 0) > 0 && (
         <PricingRow
-          label={`${t("admin.orders.pointsRedeemed", { fallback: "Points redeemed" })} (${order.pointsRedeemed.toLocaleString("en-US")})`}
-          value={order.pointsRedemptionValue}
+          label={t("checkout.rewards.welcomeReward", { fallback: "Welcome Reward" })}
+          value={pricing.loyalty?.welcomeRewardValue ?? 0}
+          discount
+        />
+      )}
+      {(pricing.loyalty?.earnedPointsRedeemed ?? order.pointsRedeemed) > 0 && (
+        <PricingRow
+          label={`${t("admin.orders.pointsRedeemed", { fallback: "Earned points redeemed" })} (${(pricing.loyalty?.earnedPointsRedeemed ?? order.pointsRedeemed).toLocaleString("en-US")})`}
+          value={Math.max(0, order.pointsRedemptionValue - (pricing.loyalty?.welcomeRewardValue ?? 0))}
           discount
         />
       )}

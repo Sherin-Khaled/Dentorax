@@ -1,5 +1,5 @@
 export const SUPPORT_AUTO_ACKNOWLEDGEMENT =
-  "Thanks for contacting X Dental Store. Our support team received your message and will reply as soon as possible.";
+  "Thanks for contacting Dentorax. Our support team received your message and will reply as soon as possible.";
 
 export async function createFirstMessageAcknowledgement(database, threadId) {
   const [customerMessageCount, existingAcknowledgement] = await Promise.all([

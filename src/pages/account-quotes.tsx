@@ -167,7 +167,7 @@ export default function AccountQuotes() {
 
   return (
     <div className="bg-[var(--xd-bg)] pb-14 pt-10 lg:pb-20 lg:pt-14">
-      <Container><div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)] xl:gap-7"><AccountSidebar />
+      <Container account><div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)] xl:gap-7"><AccountSidebar />
         <main className="min-w-0 space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[var(--xd-gold-active)]">{t("quoteWorkflow.quoteRequest")}</p><h1 className="mt-2 font-display text-[42px] font-bold text-[#050505]">{t("quoteWorkflow.myQuotes")}</h1><p className="mt-3 text-[15px] text-[#6A6A6A]">{t("quoteWorkflow.customerDescription")}</p></div><Button type="button" onClick={() => { setSuccess(null); setIsModalOpen(true); }} className="gap-2"><Plus size={17} />{t("quoteWorkflow.requestQuote")}</Button></div>
           {success && <div role="status" className="rounded-[14px] border border-[#16803C]/20 bg-[#16803C]/10 px-4 py-3 text-[13px] font-semibold text-[#16803C]">{success}</div>}

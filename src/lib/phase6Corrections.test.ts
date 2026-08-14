@@ -10,12 +10,10 @@ function repoSource(path: string) {
   return readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 }
 
-test("welcome popup reads the safe public loyalty contract", () => {
-  const popup = source("components/WelcomeRewardsPopup.tsx");
+test("public app no longer mounts the retired universal signup reward popup", () => {
+  const app = source("App.tsx");
   const service = source("services/loyalty.ts");
-  assert.match(popup, /getPublicLoyaltySettings/);
-  assert.match(popup, /welcomeMinimumSubtotalEgp/);
-  assert.match(popup, /welcomeExpiryDays/);
+  assert.doesNotMatch(app, /WelcomeRewardsPopup/);
   assert.match(service, /apiRequest<\{ settings: PublicLoyaltySettings \}>/);
   assert.match(service, /"\/loyalty\/settings"/);
 });
@@ -31,16 +29,16 @@ test("admin loyalty refresh keeps the selected customer stable and submits signe
   assert.match(loyalty, /points: Number\(points\)/);
 });
 
-test("checkout shows the approved welcome threshold and keeps expiry guidance in the welcome surface", () => {
+test("checkout keeps the approved points threshold without a public universal welcome surface", () => {
   const checkout = source("pages/checkout.tsx");
-  const popup = source("components/WelcomeRewardsPopup.tsx");
+  const app = source("App.tsx");
   const orderTypes = source("services/orders.ts");
   const serverPricing = repoSource("server/src/services/orderPricing.service.js");
   assert.match(checkout, /vipShippingDiscount/);
   assert.match(checkout, /welcomeMinimumSubtotal/);
   assert.match(checkout, /pointsMinimumRule/);
   assert.doesNotMatch(checkout, /welcomeExpiryDays/);
-  assert.match(popup, /welcomeExpiryDays/);
+  assert.doesNotMatch(app, /WelcomeRewardsPopup/);
   assert.match(orderTypes, /vipShippingSource/);
   assert.match(serverPricing, /VIP_STANDARD_FREE_SHIPPING/);
   assert.match(serverPricing, /VIP_FAST_UPGRADE_ONLY/);
@@ -72,14 +70,11 @@ test("deleted customer benefits are rejected by every mutation endpoint", () => 
   assert.match(adminUsers, /Deleted accounts cannot manage benefits/);
 });
 
-test("loyalty UI presents immediate welcome rewards and keeps usable and pending balances separate", () => {
-  const popup = source("components/WelcomeRewardsPopup.tsx");
+test("loyalty UI keeps usable and pending balances separate without advertising universal signup points", () => {
+  const app = source("App.tsx");
   const dashboard = source("pages/account-dashboard.tsx");
   const wallet = source("pages/account-wallet.tsx");
-  assert.match(popup, /Get EGP \{value\} toward your first order/);
-  assert.doesNotMatch(popup, /pending welcome points/i);
-  assert.match(popup, /welcomeExpiryDays/);
-  assert.match(popup, /welcomeMinimumSubtotalEgp/);
+  assert.doesNotMatch(app, /WelcomeRewardsPopup/);
   assert.match(dashboard, /Available Points/);
   assert.match(dashboard, /Open Orders/);
   assert.match(wallet, /pendingPoints > 0/);
@@ -92,7 +87,8 @@ test("checkout uses the premium location select and a non-wrapping EGP money com
   assert.match(checkout, /DentalSelect/);
   assert.match(checkout, /Use manual delivery address/);
   assert.match(checkout, /Location-based delivery offers are not applied to manual addresses/);
-  assert.match(checkout, /Redeem reward points/);
+  assert.match(checkout, /Use 5,000 Points/);
+  assert.match(checkout, /Redeem earned points/);
   assert.match(checkout, /Use store credit/);
   assert.match(checkout, /<Money amount=/);
   assert.match(money, /whitespace-nowrap/);

@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "../src/config/db.js";
 
 const isProduction = process.env.NODE_ENV === "production";
-const name = process.env.SEED_ADMIN_NAME?.trim() || (isProduction ? "" : "X Dental Admin");
+const name = process.env.SEED_ADMIN_NAME?.trim() || (isProduction ? "" : "Dentorax Admin");
 const email = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase() || (isProduction ? "" : "admin@xdental.local");
 const password = process.env.SEED_ADMIN_PASSWORD || (isProduction ? "" : "Admin123456");
 const role = process.env.SEED_ADMIN_ROLE?.trim().toUpperCase() || "ADMIN";

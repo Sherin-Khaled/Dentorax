@@ -1,76 +1,16 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import {
-  Building2,
-  Mail,
-  MessageCircle,
-  Phone,
-  type LucideIcon,
-} from "lucide-react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { Mail } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { DirectionalIcon } from "@/components/DirectionalIcon";
 import { Button } from "@/components/dental/Button";
 import { SectionReveal } from "@/components/dental/SectionReveal";
-import { PremiumAccentIcon } from "@/components/dental/PremiumAccentIcon";
+import { ContactMethods } from "@/components/dental/ContactMethods";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { useLanguage } from "@/context/LanguageContext";
 import { submitContactMessage } from "@/services/contact";
 import { ApiError } from "@/services/http";
 import { FAQS, HOME_FAQS } from "@/data/faqs";
-
-const CONTACT_ACTIONS: {
-  Icon: LucideIcon;
-  label: string;
-  subtitle: string;
-  contacts: {
-    label?: string;
-    value: string;
-    href: string;
-    external?: boolean;
-  }[];
-}[] = [
-  {
-    Icon: Phone,
-    label: "Call Us",
-    subtitle: "Support Numbers",
-    contacts: [
-      { label: "Main Support", value: "01552229405", href: "tel:+201552229405" },
-      { label: "Office Landline", value: "0223955981", href: "tel:+20223955981" },
-    ],
-  },
-  {
-    Icon: Mail,
-    label: "Email Us",
-    subtitle: "Customer Email",
-    contacts: [{ value: "orders@xdentalstore.com", href: "mailto:orders@xdentalstore.com" }],
-  },
-  {
-    Icon: MessageCircle,
-    label: "WhatsApp Support",
-    subtitle: "Orders WhatsApp",
-    contacts: [
-      {
-        label: "Orders WhatsApp",
-        value: "01035777335",
-        href: "https://wa.me/201035777335",
-        external: true,
-      },
-    ],
-  },
-  {
-    Icon: Building2,
-    label: "Visit / Warehouse",
-    subtitle: "Location Address",
-    contacts: [
-      { label: "Branch Landline", value: "0223615151", href: "tel:+20223615151" },
-      { label: "Branch Mobile", value: "01065057035", href: "tel:+201065057035" },
-    ],
-  },
-];
-
-function ContactActionIcon({ Icon }: { Icon: LucideIcon }) {
-  return <PremiumAccentIcon icon={Icon} size={18} strokeWidth={2.2} />;
-}
 
 const FIELD_CLASS =
   "h-10 w-full rounded-[10px] border border-[#3D2518]/10 bg-white px-3 text-[13px] text-[#050505] outline-none transition focus:border-[var(--xd-gold-border-hover)] focus:ring-4 focus:ring-[var(--xd-gold-active)]/10";
@@ -235,25 +175,6 @@ function HeroSection() {
 
 function QuickActionsSection() {
   const { t } = useLanguage();
-  const [activeCard, setActiveCard] = useState<string | null>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const closeOnOutsidePointer = (event: PointerEvent) => {
-      if (cardsRef.current?.contains(event.target as Node)) return;
-
-      setActiveCard(null);
-      if (
-        document.activeElement instanceof HTMLElement &&
-        cardsRef.current?.contains(document.activeElement)
-      ) {
-        document.activeElement.blur();
-      }
-    };
-
-    document.addEventListener("pointerdown", closeOnOutsidePointer);
-    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
-  }, []);
 
   return (
     <section className="pb-16 lg:pb-20">
@@ -270,90 +191,7 @@ function QuickActionsSection() {
             </p>
           </div>
 
-          <div ref={cardsRef} className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {CONTACT_ACTIONS.map(({ Icon, label, subtitle, contacts }) => {
-              const isFlipped = activeCard === label;
-              const title = t(`contactPage.actions.${label}`, { fallback: label });
-              const supportingText = t(`contactPage.cardSubtitles.${subtitle}`, {
-                fallback: subtitle,
-              });
-
-              return (
-                <article
-                  key={label}
-                  tabIndex={0}
-                  role="group"
-                  aria-label={`${title}. ${supportingText}`}
-                  data-flipped={isFlipped ? "true" : "false"}
-                  onClick={(event) => {
-                    if ((event.target as HTMLElement).closest("a")) return;
-                    if (isFlipped) event.currentTarget.blur();
-                    setActiveCard(isFlipped ? null : label);
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === "Escape") {
-                      setActiveCard(null);
-                      (event.target as HTMLElement).blur();
-                      return;
-                    }
-                    if (event.target !== event.currentTarget) return;
-                    if (event.key !== "Enter" && event.key !== " ") return;
-
-                    event.preventDefault();
-                    if (isFlipped) event.currentTarget.blur();
-                    setActiveCard(isFlipped ? null : label);
-                  }}
-                  onBlur={(event) => {
-                    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-                      setActiveCard((current) => (current === label ? null : current));
-                    }
-                  }}
-                  className="group relative h-[170px] cursor-pointer rounded-[14px] [perspective:1000px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--xd-gold-border)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--xd-bg)]"
-                >
-                  <div
-                    className={`relative h-full w-full [transform-style:preserve-3d] transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:[transform:rotateY(180deg)] group-focus-within:[transform:rotateY(180deg)] motion-reduce:transition-none ${
-                      isFlipped ? "[transform:rotateY(180deg)]" : ""
-                    }`}
-                  >
-                    <div className="absolute inset-0 flex flex-col items-center justify-center rounded-[14px] border border-[var(--xd-gold-border-soft)] bg-white/75 px-4 py-5 text-center shadow-[0_8px_22px_rgba(5,5,5,0.03)] [backface-visibility:hidden] transition-[border-color,box-shadow] duration-300 group-hover:border-[var(--xd-gold-border)] group-focus-within:border-[var(--xd-gold-border)]">
-                      <span className="xd-icon-amber xd-icon-card-surface flex h-10 w-10 items-center justify-center rounded-[10px] bg-[var(--xd-gold-bg-soft)]">
-                        <ContactActionIcon Icon={Icon} />
-                      </span>
-                      <span className="mt-3 text-[13px] font-semibold text-[#050505]">
-                        {title}
-                      </span>
-                      <span className="mt-1.5 text-[12px] leading-[18px] text-[#717182]">
-                        {supportingText}
-                      </span>
-                    </div>
-
-                    <div className="absolute inset-0 flex flex-col items-center justify-center rounded-[14px] border border-[var(--xd-gold-border-soft)] bg-white/90 px-4 py-5 text-center shadow-[0_8px_22px_rgba(5,5,5,0.03)] [backface-visibility:hidden] [transform:rotateY(180deg)] transition-[border-color,box-shadow] duration-300 group-hover:border-[var(--xd-gold-border)] group-focus-within:border-[var(--xd-gold-border)]">
-                      <div className="flex flex-col gap-2.5">
-                        {contacts.map(({ label: contactLabel, value, href, external }) => (
-                          <a
-                            key={value}
-                            href={href}
-                            target={external ? "_blank" : undefined}
-                            rel={external ? "noopener noreferrer" : undefined}
-                            className="rounded-[8px] px-2 text-[12px] leading-[18px] text-[#717182] transition hover:text-[#050505] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--xd-gold-border)]"
-                          >
-                            {contactLabel && (
-                              <span className="block font-semibold text-[#3A3A3A]">
-                                {t(`contactPage.contactLabels.${contactLabel}`, {
-                                  fallback: contactLabel,
-                                })}
-                              </span>
-                            )}
-                            <span dir="ltr" className="block">{value}</span>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+          <div className="mt-10"><ContactMethods /></div>
         </SectionReveal>
       </ContactContainer>
     </section>

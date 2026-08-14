@@ -92,7 +92,7 @@ export async function startBackend({
   }
 
   logger.log("PostgreSQL connection established through Prisma.");
-  logger.log(`X Dental Store API is listening on port ${configuration.port}.`);
+  logger.log(`Dentorax API is listening on port ${configuration.port}.`);
 
   return {
     configuration,

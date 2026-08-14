@@ -17,6 +17,8 @@ export function verifyToken(token) {
 
 export function getAuthCookieOptions() {
   const isProduction = process.env.NODE_ENV === "production";
+  const secureDevelopmentCookie =
+    process.env.COOKIE_SECURE?.trim().toLowerCase() === "true";
   const configuredSameSite = process.env.COOKIE_SAME_SITE?.trim().toLowerCase();
   const productionSameSite = ["lax", "strict", "none"].includes(configuredSameSite)
     ? configuredSameSite
@@ -24,7 +26,9 @@ export function getAuthCookieOptions() {
 
   return {
     httpOnly: true,
-    secure: isProduction,
+    // Production is always secure. Local HTTPS tunnels may opt in without
+    // changing the ordinary HTTP localhost development default.
+    secure: isProduction || secureDevelopmentCookie,
     sameSite: isProduction ? productionSameSite : "lax",
     path: "/",
     priority: "high",

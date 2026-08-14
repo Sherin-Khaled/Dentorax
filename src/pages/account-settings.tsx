@@ -712,7 +712,7 @@ export default function AccountSettings() {
 
   return (
     <div className="bg-[var(--xd-bg)] pb-14 pt-10 lg:pb-20 lg:pt-14">
-      <Container className="overflow-x-clip">
+      <Container account className="overflow-x-clip">
         <div className="grid min-w-0 gap-6 lg:grid-cols-[260px_minmax(0,1fr)] xl:gap-7">
           <AccountSidebar onLogout={signOut} />
 
@@ -1005,7 +1005,7 @@ export default function AccountSettings() {
               <SettingsCard
                 icon={Mail}
                 title={accountT(t, "settings.communicationPreferences", "Communication Preferences")}
-                subtitle={accountT(t, "settings.communicationPreferencesDescription", "Control marketing and service messages from X Dental Store.")}
+                subtitle={accountT(t, "settings.communicationPreferencesDescription", "Control marketing and service messages from Dentorax.")}
               >
                 <div className="space-y-4">
                   <ToggleRow
@@ -1113,7 +1113,7 @@ export default function AccountSettings() {
                               {accountT(
                                 t,
                                 "settings.completedDeactivationExplanation",
-                                "Your account has been deactivated. To restore access, contact X Dental Store support. An administrator must review and reactivate the account. You will need to sign in again after reactivation."
+                                "Your account has been deactivated. To restore access, contact Dentorax support. An administrator must review and reactivate the account. You will need to sign in again after reactivation."
                               )}
                             </p>
                             <Link

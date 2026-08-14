@@ -145,7 +145,7 @@ export default function Login() {
                 X
               </span>
               <span className="font-display text-[15px] font-semibold tracking-tight">
-                X Dental Store
+                Dentorax
               </span>
             </Link>
 
@@ -250,7 +250,7 @@ export default function Login() {
                 >
                   <p className="font-semibold">
                     {t("auth.login.forgotHelpTitle", {
-                      fallback: "For password reset, please contact X Dental support.",
+                      fallback: "For password reset, please contact Dentorax support.",
                     })}
                   </p>
                   <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1">

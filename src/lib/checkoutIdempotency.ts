@@ -78,6 +78,7 @@ export function fingerprintCheckoutAttempt(input: CreateOrderInput) {
     paymentMethod: normalizeText(input.paymentMethod, true),
     promoCode: normalizeText(input.promoCode).toUpperCase(),
     requestedPoints: Number(input.requestedPoints ?? 0),
+    useWelcomeReward: input.useWelcomeReward === true,
     requestedWalletAmount: normalizeText(
       String(input.requestedWalletAmount ?? "0")
     ),

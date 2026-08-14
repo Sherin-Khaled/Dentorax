@@ -14,9 +14,9 @@ import { Layout }          from "@/components/layout";
 import { NotificationPermissionPrompt } from "@/components/NotificationPermissionPrompt";
 import { DailyOfferAlert } from "@/components/DailyOfferAlert";
 import { FloatingSupportChat } from "@/components/dental/FloatingSupportChat";
+import { FeatureTourDialog } from "@/components/dental/FeatureTourDialog";
 import { RecordingCursor } from "@/components/dental/RecordingCursor";
 import { GoldIconGradientDefs } from "@/components/dental/GoldIconGradientDefs";
-import { WelcomeRewardsPopup } from "@/components/WelcomeRewardsPopup";
 import { SEO } from "@/components/SEO";
 
 // Lazy-loaded route pages — each page becomes its own JS chunk
@@ -384,10 +384,10 @@ function RoutedAppChrome() {
       <RoutePreloader />
       {!isAdminRoute && (
         <>
+          <FeatureTourDialog />
           <NotificationPermissionPrompt />
           <DailyOfferAlert />
           <FloatingSupportChat />
-          <WelcomeRewardsPopup />
         </>
       )}
       <RecordingCursor />

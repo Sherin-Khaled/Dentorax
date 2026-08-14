@@ -13,7 +13,7 @@ function safeLink(value) {
 
 export function createPushPayload(input) {
   return JSON.stringify({
-    title: cleanText(input.title, 120) || "X Dental Store",
+    title: cleanText(input.title, 120) || "Dentorax",
     body: cleanText(input.body, 240) || "You have a new account update.",
     link: safeLink(input.link),
     tag: cleanText(input.tag, 80) || "x-dental-account-update",

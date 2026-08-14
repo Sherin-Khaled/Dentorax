@@ -33,6 +33,11 @@ import {
   LAUNCH_LOYALTY_PROGRAM_SETTINGS,
   buildLaunchDeliverySeedTables,
 } from "../../config/launchBusinessRules.js";
+import {
+  collectCategoryDescendantIds,
+  isFastDeliveryProductRecord,
+  rankBestPriceProducts,
+} from "../../services/launchMerchandising.service.js";
 
 const PROJECT_ROOT = path.resolve(import.meta.dirname, "../../../..");
 const BUNDLE_PATH = path.join(PROJECT_ROOT, "production-seed-export", "production-seed-bundle.json");
@@ -52,6 +57,35 @@ function verifyBundleIntegrity(bundle) {
     if (bundle.counts[table] !== rows.length) {
       problems.push(`${table}: count mismatch (bundle says ${bundle.counts[table]}, array has ${rows.length})`);
     }
+  }
+  const products = bundle.tables?.product ?? [];
+  const requiredProductFields = ["salePrice", "isWeeklyOffer", "isBestSeller", "isFastDelivery"];
+  for (const field of requiredProductFields) {
+    if (products.some((product) => !Object.hasOwn(product, field))) {
+      problems.push(`product: required merchandising field ${field} is missing from one or more rows`);
+    }
+  }
+  const weeklyOffers = products.filter((product) => product.isWeeklyOffer || (
+    product.salePrice !== null
+    && Number(product.salePrice) > 0
+    && Number(product.salePrice) < Number(product.price)
+  )).length;
+  if (bundle.merchandisingEligibility?.weeklyOffers !== weeklyOffers) {
+    problems.push("product: Weekly Offer eligibility metadata does not match the exported product rows");
+  }
+  const bestPrices = rankBestPriceProducts(products).length;
+  if (bundle.merchandisingEligibility?.bestPrices !== bestPrices) {
+    problems.push("product: Best Prices eligibility metadata does not match the exported product rows");
+  }
+  const equipmentCategoryIds = collectCategoryDescendantIds(bundle.tables?.category ?? []);
+  const fastDelivery = products.filter((product) =>
+    isFastDeliveryProductRecord(product, equipmentCategoryIds)
+  ).length;
+  if (bundle.merchandisingEligibility?.fastDelivery !== fastDelivery) {
+    problems.push("product: Fast Delivery eligibility metadata does not match the exported taxonomy/product rows");
+  }
+  if (!(bundle.tables?.brand ?? []).some((brand) => brand.slug === "3m")) {
+    problems.push("brand: approved 3M directory record is missing");
   }
   return problems;
 }
@@ -148,7 +182,7 @@ async function main() {
       await tx.category.create({ data: category });
     }
     if (bundle.tables.product.length) await tx.product.createMany({ data: bundle.tables.product });
-  });
+  }, { maxWait: 10_000, timeout: 5 * 60 * 1000 });
 
   console.log("Applied successfully.");
   await prisma.$disconnect();

@@ -19,7 +19,7 @@ function mailEnvironment(overrides = {}) {
     SMTP_SECURE: "true",
     SMTP_USER: "mailer",
     SMTP_PASS: "super-secret-password",
-    MAIL_FROM_NAME: "X Dental Store",
+    MAIL_FROM_NAME: "Dentorax",
     MAIL_FROM_EMAIL: "notifications@example.test",
     COMPANY_NOTIFICATION_EMAIL: "company@example.test",
     CONTACT_NOTIFICATION_EMAIL: "contact@example.test",
@@ -96,16 +96,16 @@ test("installed Nodemailer composes the application message shape without networ
   });
 
   const result = await transport.sendMail({
-    from: { name: "X Dental Store", address: "notifications@example.test" },
+    from: { name: "Dentorax", address: "notifications@example.test" },
     to: "company@example.test",
     replyTo: "clinic@example.test",
-    subject: "New X Dental Store request",
+    subject: "New Dentorax request",
     text: "A customer submitted a request.",
     html: "<p>A customer submitted a request.</p>",
   });
   const message = result.message.toString("utf8");
 
-  assert.match(message, /Subject: New X Dental Store request/);
+  assert.match(message, /Subject: New Dentorax request/);
   assert.match(message, /company@example\.test/);
   assert.match(message, /clinic@example\.test/);
 });
@@ -154,13 +154,13 @@ test("successful SMTP sends branded HTML/text and marks SENT", async () => {
   assert.equal(result.delivery.status, "SENT");
   assert.equal(sentMessages.length, 1);
   assert.deepEqual(sentMessages[0].from, {
-    name: "X Dental Store",
+    name: "Dentorax",
     address: "notifications@example.test",
   });
   assert.equal(sentMessages[0].to, "contact@example.test");
   assert.equal(sentMessages[0].replyTo, "clinic@example.test");
   assert.match(sentMessages[0].subject, /New contact message/);
-  assert.match(sentMessages[0].html, /X Dental Store/);
+  assert.match(sentMessages[0].html, /Dentorax/);
   assert.match(sentMessages[0].text, /Need a quotation/);
 });
 

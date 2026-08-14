@@ -12,10 +12,10 @@ icons with no `href` at all; the actual anchor is rendered at ~line 239 with
 
 | Platform | Current state | Needed |
 |---|---|---|
-| Instagram | `href="#"` | Real X Dental Store Instagram URL |
-| X/Twitter | `href="#"` | Real X Dental Store X/Twitter URL |
-| Facebook | `href="#"` | Real X Dental Store Facebook URL |
-| LinkedIn | `href="#"` | Real X Dental Store LinkedIn URL |
+| Instagram | `href="#"` | Real Dentorax Instagram URL |
+| X/Twitter | `href="#"` | Real Dentorax X/Twitter URL |
+| Facebook | `href="#"` | Real Dentorax Facebook URL |
+| LinkedIn | `href="#"` | Real Dentorax LinkedIn URL |
 
 Once supplied, wire each into the existing `SOCIAL` array's icon entries —
 no layout/design change needed, only adding a real `href`.

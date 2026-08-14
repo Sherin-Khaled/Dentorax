@@ -4,6 +4,7 @@ import {
   isPubliclyAvailable,
   serializePublicProduct,
   buildPriceFilter,
+  buildWeeklyOfferFilter,
   queryList,
   PRODUCT_SORT_ORDER_BY,
 } from "./catalog.controller.js";
@@ -107,6 +108,17 @@ test("the public API serializer returns base, sale, and effective prices", () =>
   assert.equal(serialized.effectivePrice, 75);
   assert.equal(serialized.price, 75);
   assert.equal(serialized.originalPrice, 100);
+  assert.equal(serialized.isWeeklyOffer, true);
+});
+
+test("Weekly Offers includes genuine catalogue sale prices without requiring an imported flag", () => {
+  assert.deepEqual(buildWeeklyOfferFilter(true), {
+    OR: [{ isWeeklyOffer: true }, { salePrice: { not: null } }],
+  });
+  assert.deepEqual(buildWeeklyOfferFilter(false), {
+    AND: [{ isWeeklyOffer: false }, { salePrice: null }],
+  });
+  assert.equal(buildWeeklyOfferFilter(null), null);
 });
 
 test("isPubliclyAvailable is false when out of stock, inactive, or explicitly unavailable", () => {

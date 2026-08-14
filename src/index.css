@@ -152,7 +152,7 @@
   --dental-success: #16803C;
   --dental-error: #B42318;
 
-  /* ── X Dental Design System Tokens (source of truth) ───────────── */
+  /* ── Dentorax Design System Tokens (source of truth) ───────────── */
   --xd-bg:               #FBFAF7;
   --xd-surface:          #FFFFFF;
   --xd-surface-strong:   #FFFEFB;
@@ -859,7 +859,7 @@
     }
 
     .products-grid--with-filters {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }
   }
 
@@ -1653,7 +1653,71 @@ body.xd-recording-cursor-active * {
   color: #F6D85D !important;
 }
 
+.contact-method-card__inner {
+  transform-style: preserve-3d;
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.contact-method-card__front,
+.contact-method-card__back {
+  backface-visibility: hidden;
+  transition: border-color 300ms, box-shadow 300ms;
+}
+
+.contact-method-card__back {
+  pointer-events: none;
+  transform: rotateY(180deg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .contact-method-card:hover .contact-method-card__inner {
+    transform: rotateY(180deg);
+  }
+
+  .contact-method-card:hover .contact-method-card__back {
+    pointer-events: auto;
+  }
+}
+
+.contact-method-card:focus-within .contact-method-card__inner,
+.contact-method-card[data-flipped="true"] .contact-method-card__inner {
+  transform: rotateY(180deg);
+}
+
+.contact-method-card:focus-within .contact-method-card__back,
+.contact-method-card[data-flipped="true"] .contact-method-card__back {
+  pointer-events: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .contact-method-card__inner,
+  .contact-method-card:focus-within .contact-method-card__inner,
+  .contact-method-card[data-flipped="true"] .contact-method-card__inner {
+    transform: none;
+    transition: none;
+  }
+
+  .contact-method-card__front,
+  .contact-method-card__back {
+    transform: none;
+    transition: opacity 120ms ease-out;
+  }
+
+  .contact-method-card__back {
+    opacity: 0;
+  }
+
+  .contact-method-card:focus-within .contact-method-card__front,
+  .contact-method-card[data-flipped="true"] .contact-method-card__front {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .contact-method-card:focus-within .contact-method-card__back,
+  .contact-method-card[data-flipped="true"] .contact-method-card__back {
+    opacity: 1;
+  }
+
   .home-testimonial-row {
     overflow-x: auto;
     mask-image: none;
@@ -1669,5 +1733,17 @@ body.xd-recording-cursor-active * {
   circle animateMotion {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (hover: hover) and (pointer: fine) {
+  .contact-method-card:hover .contact-method-card__front {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .contact-method-card:hover .contact-method-card__back {
+    opacity: 1;
+    pointer-events: auto;
   }
 }

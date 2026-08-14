@@ -98,6 +98,42 @@ export function isScheduledPromotionValidNow(promotion, now = new Date()) {
   return false;
 }
 
+function utcInstantForLocalMidnight(localDateKey, timezone) {
+  let guess = new Date(`${localDateKey}T00:00:00.000Z`);
+  const targetMidnight = guess.getTime();
+  for (let i = 0; i < 3; i += 1) {
+    const clock = zonedClock(guess, timezone);
+    const guessedLocalMidnight =
+      new Date(`${clock.date}T00:00:00.000Z`).getTime() + clock.minutes * 60_000;
+    const diff = targetMidnight - guessedLocalMidnight;
+    if (diff === 0) break;
+    guess = new Date(guess.getTime() + diff);
+  }
+  return guess;
+}
+
+/**
+ * Returns the UTC instant at which a WEEKLY_RECURRING-style window (defined
+ * by `weekdays`/`timezone`) next stops matching, starting the search from
+ * `now`. Used to derive a real campaign-close expiry instead of a fixed
+ * duration — e.g. for weekdays [5, 6] (Fri/Sat) this returns the upcoming
+ * Sunday 00:00 in `timezone`.
+ */
+export function endOfWeeklyRecurringWindow({ weekdays, timezone } = {}, now = new Date()) {
+  const zone = timezone || PROMOTION_TIMEZONE;
+  const validWeekdays = new Set(Array.isArray(weekdays) ? weekdays : []);
+  if (validWeekdays.size === 0 || validWeekdays.size >= 7) return null;
+
+  for (let dayOffset = 1; dayOffset <= 8; dayOffset += 1) {
+    const probe = new Date(now.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+    const clock = zonedClock(probe, zone);
+    if (!validWeekdays.has(clock.weekday)) {
+      return utcInstantForLocalMidnight(clock.date, zone);
+    }
+  }
+  return null;
+}
+
 function isPromotionPast(promotion, now = new Date()) {
   const clock = zonedClock(now, promotion.timezone || PROMOTION_TIMEZONE);
   const start = dateKey(promotion.startAt);

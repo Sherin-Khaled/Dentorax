@@ -1,6 +1,6 @@
 # Production image storage
 
-X Dental Store accepts product, customer profile, and Hero-slide images through
+Dentorax accepts product, customer profile, and Hero-slide images through
 the backend. Local development stores those files under `server/uploads`.
 Production on Hostinger Business or Cloud managed Node.js hosting must use
 durable S3-compatible object storage so a redeployment cannot remove customer or

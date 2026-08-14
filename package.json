@@ -22,6 +22,7 @@
     "test:phase7c": "node --experimental-strip-types --test src/lib/adminCatalogPhase7cUi.test.ts",
     "test:launch-readiness": "node --experimental-strip-types --test src/lib/catalogLaunchReadiness.test.ts",
     "test:prelaunch": "node --experimental-strip-types --test src/lib/prelaunchStabilization.test.ts",
+    "test:rebrand": "node --experimental-strip-types --test src/lib/dentoraxRebrand.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "check": "tsc -p tsconfig.json --noEmit"
   },

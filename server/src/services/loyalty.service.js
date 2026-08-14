@@ -1,6 +1,10 @@
 import { createHash, randomUUID } from "node:crypto";
 import { prisma } from "../config/db.js";
 import { LAUNCH_LOYALTY_PROGRAM_SETTINGS } from "../config/launchBusinessRules.js";
+import {
+  endOfWeeklyRecurringWindow,
+  zonedClock,
+} from "./scheduledPromotion.service.js";
 
 const SETTINGS_ID = "default";
 const EGP10_CENTS = 1_000;
@@ -143,55 +147,114 @@ export async function ensureLoyaltyAccount(database, userId) {
   });
 }
 
-export async function initializeNewCustomerLoyalty(database, userId, now = new Date()) {
+function normalizeWelcomePromoCode(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function isWelcomePromoCodeInWindow(promo, now) {
+  const clock = zonedClock(now, promo.timezone);
+  return Boolean(
+    promo.isActive
+    && Array.isArray(promo.weekdays)
+    && promo.weekdays.includes(clock.weekday)
+  );
+}
+
+/**
+ * Resolves a raw signup promo code against the WelcomePromoCode table.
+ * Matching is case-insensitive (consistent with how checkout coupon codes
+ * are already normalized in coupon.service.js); the stored code's exact
+ * casing is preserved for display/description text.
+ */
+export async function resolveWelcomePromoCode(database, rawCode, now = new Date()) {
+  const code = normalizeWelcomePromoCode(rawCode);
+  if (!code) return { status: "none" };
+
+  const promo = await database.welcomePromoCode.findFirst({
+    where: { code: { equals: code, mode: "insensitive" } },
+  });
+  if (!promo || !promo.isActive) {
+    return { status: "invalid", reason: "unknown" };
+  }
+  if (!isWelcomePromoCodeInWindow(promo, now)) {
+    return { status: "invalid", reason: "outside_campaign" };
+  }
+  return { status: "valid", promo };
+}
+
+export async function initializeNewCustomerLoyalty(
+  database,
+  userId,
+  { now = new Date(), promoCode } = {}
+) {
   if (typeof database.$transaction === "function") {
     return database.$transaction((transaction) =>
-      initializeNewCustomerLoyalty(transaction, userId, now)
+      initializeNewCustomerLoyalty(transaction, userId, { now, promoCode })
     );
   }
-  const settings = await getLoyaltyProgramSettings(database);
-  const welcomePoints = settings.welcomePoints;
   const account = await ensureLoyaltyAccount(database, userId);
+  const resolved = await resolveWelcomePromoCode(database, promoCode, now);
 
-  let notification = null;
-  if (welcomePoints > 0) {
-    const idempotencyKey = `welcome:${userId}:granted`;
-    const existing = await database.loyaltyPointTransaction.findUnique({
-      where: { idempotencyKey },
-    });
-    if (existing) return { account, notification, granted: false };
-
-    const grantedAt = now;
-    const updatedAccount = await database.loyaltyAccount.update({
-      where: { userId },
-      data: {
-        availablePoints: { increment: welcomePoints },
-        lifetimeEarnedPoints: { increment: welcomePoints },
-      },
-    });
-    await database.loyaltyPointTransaction.create({
-      data: {
-        userId,
-        type: "WELCOME_GRANTED",
-        points: welcomePoints,
-        balanceAfter: updatedAccount.availablePoints,
-        status: "ACTIVE",
-        expiresAt: addDays(grantedAt, welcomeExpiryDays(settings)),
-        description: "Welcome points granted after public customer registration.",
-        idempotencyKey,
-        createdAt: grantedAt,
-      },
-    });
-    notification = await createMandatoryLoyaltyNotification(database, {
-      eventKey: idempotencyKey,
-      userId,
-      title: "Welcome points added",
-      body: `${welcomePoints} welcome points are available now and expire in ${welcomeExpiryDays(settings)} days.`,
-      metadata: { type: "WELCOME_GRANTED", points: welcomePoints },
-    });
-    return { account: updatedAccount, notification, granted: true };
+  if (resolved.status !== "valid") {
+    return { account, notification: null, granted: false, promo: resolved };
   }
-  return { account, notification, granted: false };
+
+  const { promo } = resolved;
+  const idempotencyKey = `welcome-promo:${userId}:granted`;
+  const existing = await database.loyaltyPointTransaction.findUnique({
+    where: { idempotencyKey },
+  });
+  if (existing) {
+    return {
+      account,
+      notification: null,
+      granted: false,
+      promo: { status: "already_granted" },
+    };
+  }
+
+  const grantedAt = now;
+  const expiresAt = endOfWeeklyRecurringWindow(promo, grantedAt);
+  const updatedAccount = await database.loyaltyAccount.update({
+    where: { userId },
+    data: {
+      availablePoints: { increment: promo.points },
+      lifetimeEarnedPoints: { increment: promo.points },
+    },
+  });
+  await database.loyaltyPointTransaction.create({
+    data: {
+      userId,
+      type: "WELCOME_GRANTED",
+      points: promo.points,
+      balanceAfter: updatedAccount.availablePoints,
+      status: "ACTIVE",
+      expiresAt,
+      description: `${promo.code} welcome promo: ${promo.points} points granted.`,
+      idempotencyKey,
+      createdAt: grantedAt,
+    },
+  });
+  const expiryWording = expiresAt
+    ? `Use before ${expiresAt.toLocaleString("en-US", {
+        timeZone: promo.timezone,
+        dateStyle: "medium",
+        timeStyle: "short",
+      })} (Africa/Cairo), when this weekend's campaign closes.`
+    : "Use before this weekend's campaign closes.";
+  const notification = await createMandatoryLoyaltyNotification(database, {
+    eventKey: idempotencyKey,
+    userId,
+    title: "Promotional points added",
+    body: `${promo.points} promotional points added from ${promo.code}. ${expiryWording}`,
+    metadata: { type: "WELCOME_GRANTED", points: promo.points, promoCode: promo.code },
+  });
+  return {
+    account: updatedAccount,
+    notification,
+    granted: true,
+    promo: { status: "granted", code: promo.code, points: promo.points, expiresAt },
+  };
 }
 
 function calculateRemainingPointLots(transactions) {
@@ -247,39 +310,15 @@ function calculateRemainingPointLots(transactions) {
   return lots;
 }
 
-function allocatePointLots(lots, requestedPoints) {
-  const allocations = [];
-  let remaining = requestedPoints;
-  for (const lot of lots) {
-    if (remaining <= 0) break;
-    const points = Math.min(lot.remainingPoints, remaining);
-    if (points > 0) allocations.push({ lot, points });
-    remaining -= points;
-  }
-  return allocations;
-}
-
-function welcomeRedemptionDetails(lots, requestedPoints, welcomeEligible = true) {
-  const allocations = welcomeEligible
-    ? allocatePointLots(lots, requestedPoints)
-    : allocatePointLots(
-        lots.filter((lot) => !WELCOME_POINT_CREDIT_TYPES.has(lot.type)),
-        requestedPoints
-      );
-  const welcomeAllocations = allocations.filter(({ lot }) =>
-    WELCOME_POINT_CREDIT_TYPES.has(lot.type)
+function atomicWelcomeRewardLot(lots) {
+  const welcomeLots = lots.filter(
+    (lot) => WELCOME_POINT_CREDIT_TYPES.has(lot.type) && lot.remainingPoints > 0
   );
-  return {
-    allocations,
-    welcomePointsRedeemed: welcomeAllocations.reduce(
-      (sum, allocation) => sum + allocation.points,
-      0
-    ),
-    welcomeExpiresAt: welcomeAllocations
-      .map(({ lot }) => lot.expiresAt)
-      .filter(Boolean)
-      .sort((left, right) => new Date(left) - new Date(right))[0] ?? null,
-  };
+  if (
+    welcomeLots.length !== 1
+    || welcomeLots[0].remainingPoints !== welcomeLots[0].points
+  ) return null;
+  return welcomeLots[0];
 }
 
 export async function expirePointsForUser(database, userId, now = new Date()) {
@@ -350,6 +389,17 @@ function parseRequestedPoints(value) {
   return points;
 }
 
+function parseUseWelcomeReward(value) {
+  if (value === undefined || value === null || value === false) return false;
+  if (value === true) return true;
+  throw new LoyaltyError(
+    400,
+    "INVALID_WELCOME_REWARD_SELECTION",
+    "Welcome reward selection must be true or false.",
+    "useWelcomeReward"
+  );
+}
+
 export function parseRequestedWalletCents(value) {
   if (value === undefined || value === null || value === "") return 0;
   const normalized = typeof value === "number" ? String(value) : String(value).trim();
@@ -392,11 +442,13 @@ export async function applyLoyaltyPricing(
     userId,
     pricing,
     requestedPoints: rawRequestedPoints = 0,
+    useWelcomeReward: rawUseWelcomeReward = false,
     requestedWalletAmount = 0,
     now = new Date(),
   }
 ) {
   const requestedPoints = parseRequestedPoints(rawRequestedPoints);
+  const useWelcomeReward = parseUseWelcomeReward(rawUseWelcomeReward);
   const requestedWalletCents = parseRequestedWalletCents(requestedWalletAmount);
   const [settings, user] = await Promise.all([
     getLoyaltyProgramSettings(database),
@@ -418,26 +470,48 @@ export async function applyLoyaltyPricing(
   const welcomePointsAvailable = remainingPointLots
     .filter((lot) => WELCOME_POINT_CREDIT_TYPES.has(lot.type))
     .reduce((sum, lot) => sum + lot.remainingPoints, 0);
+  const welcomeRewardLot = atomicWelcomeRewardLot(remainingPointLots);
+  const earnedPointsAvailable = remainingPointLots
+    .filter((lot) => !WELCOME_POINT_CREDIT_TYPES.has(lot.type))
+    .reduce((sum, lot) => sum + lot.remainingPoints, 0);
   const eligibleProductSubtotalCents = Math.max(
     0,
     pricing.subtotalCents - pricing.monetaryDiscountCents
   );
   const welcomeMinimumCents = welcomeMinimumSubtotalCents(settings);
-  const maximumPoints = eligibleProductSubtotalCents < welcomeMinimumCents
-    ? 0
-    : maximumRedeemablePoints(
-        eligibleProductSubtotalCents,
-        account.availablePoints,
-        settings
-      );
-  const redemptionDetails = welcomeRedemptionDetails(
-    remainingPointLots,
-    requestedPoints,
-    eligibleProductSubtotalCents >= welcomeMinimumCents
+  if (useWelcomeReward && !welcomeRewardLot) {
+    throw new LoyaltyError(
+      409,
+      "WELCOME_REWARD_UNAVAILABLE",
+      "The one-time welcome reward is no longer available."
+    );
+  }
+  // The EGP-5,000 minimum below gates only the promotional welcome/promo-code
+  // reward. Normal earned points are governed solely by the 20%-of-subtotal
+  // cap computed into totalRedemptionCapPoints/maximumPoints.
+  const welcomePointsRedeemed = useWelcomeReward ? welcomeRewardLot.points : 0;
+  const totalRedemptionCapPoints = maximumRedeemablePoints(
+    eligibleProductSubtotalCents,
+    Number.MAX_SAFE_INTEGER,
+    settings
   );
+  const maximumPoints = Math.min(
+    Math.floor(earnedPointsAvailable / settings.pointsPerRedemptionUnit)
+      * settings.pointsPerRedemptionUnit,
+    Math.max(0, totalRedemptionCapPoints - welcomePointsRedeemed)
+  );
+  const totalRequestedPoints = requestedPoints + welcomePointsRedeemed;
 
-  if ((requestedPoints > 0 || requestedWalletCents > 0) && !settings.enabled) {
+  if ((totalRequestedPoints > 0 || requestedWalletCents > 0) && !settings.enabled) {
     throw new LoyaltyError(409, "LOYALTY_DISABLED", "Rewards redemption is currently unavailable.");
+  }
+  if (useWelcomeReward && eligibleProductSubtotalCents < welcomeMinimumCents) {
+    throw new LoyaltyError(
+      409,
+      "WELCOME_REWARD_MINIMUM_SUBTOTAL",
+      `The welcome reward is available on eligible orders of EGP ${(welcomeMinimumCents / 100).toLocaleString("en-US")} or more.`,
+      "useWelcomeReward"
+    );
   }
   if (requestedPoints > 0) {
     if (
@@ -451,15 +525,8 @@ export async function applyLoyaltyPricing(
         "requestedPoints"
       );
     }
-    if (requestedPoints > account.availablePoints) {
-      throw new LoyaltyError(409, "INSUFFICIENT_POINTS", "Your available points balance changed.");
-    }
-    if (eligibleProductSubtotalCents < welcomeMinimumCents) {
-      throw new LoyaltyError(
-        409,
-        "POINTS_MINIMUM_SUBTOTAL",
-        `Points can be redeemed on orders of EGP ${(welcomeMinimumCents / 100).toLocaleString("en-US")} or more.`
-      );
+    if (requestedPoints > earnedPointsAvailable) {
+      throw new LoyaltyError(409, "INSUFFICIENT_EARNED_POINTS", "Your earned points balance changed.");
     }
     if (requestedPoints > maximumPoints) {
       throw new LoyaltyError(
@@ -471,7 +538,7 @@ export async function applyLoyaltyPricing(
   }
 
   const pointsRedemptionValueCents = redemptionValueCentsForPoints(
-    requestedPoints,
+    totalRequestedPoints,
     settings
   );
   const afterPointsCents = Math.max(0, pricing.totalCents - pointsRedemptionValueCents);
@@ -518,7 +585,7 @@ export async function applyLoyaltyPricing(
     // the authoritative order value after points; remainingCodCents records
     // the unpaid Cash on Delivery amount separately.
     totalCents: afterPointsCents,
-    pointsRedeemed: requestedPoints,
+    pointsRedeemed: totalRequestedPoints,
     pointsRedemptionValueCents,
     walletCreditUsedCents: requestedWalletCents,
     remainingCodCents,
@@ -527,13 +594,24 @@ export async function applyLoyaltyPricing(
       availablePoints: account.availablePoints,
       pendingPoints: account.pendingPoints,
       welcomePointsAvailable,
+      welcomeRewardAvailable: Boolean(welcomeRewardLot),
+      welcomeRewardPoints: welcomeRewardLot?.points ?? 0,
+      welcomeRewardValueCents: redemptionValueCentsForPoints(
+        welcomeRewardLot?.points ?? 0,
+        settings
+      ),
+      welcomeRewardApplied: useWelcomeReward,
+      welcomePointsRedeemed,
+      earnedPointsAvailable,
+      earnedPointsRedeemed: requestedPoints,
+      welcomeRewardSourceId: welcomeRewardLot?.id ?? null,
       welcomeMinimumSubtotalCents: welcomeMinimumCents,
       welcomePointsEligible: eligibleProductSubtotalCents >= welcomeMinimumCents,
       pointValueCents,
       walletBalanceCents,
       maximumRedeemablePoints: maximumPoints,
       maximumRedemptionValueCents: redemptionValueCentsForPoints(maximumPoints, settings),
-      pointsRedeemed: requestedPoints,
+      pointsRedeemed: totalRequestedPoints,
       pointsRedemptionValueCents,
       walletCreditUsedCents: requestedWalletCents,
       remainingCodCents,
@@ -550,7 +628,7 @@ export async function applyLoyaltyPricing(
     pricingBreakdown: {
       ...pricing.pricingBreakdown,
       loyalty: {
-        pointsRedeemed: requestedPoints,
+        pointsRedeemed: totalRequestedPoints,
         pointsRedemptionValue: pointsRedemptionValueCents / 100,
         walletCreditUsed: requestedWalletCents / 100,
         orderTotalAfterPoints: afterPointsCents / 100,
@@ -562,10 +640,10 @@ export async function applyLoyaltyPricing(
         redemptionValueEgp: asNumber(settings.redemptionValueEgp),
         maximumRedemptionPercent: asNumber(settings.maximumRedemptionPercent),
         expiryMonths: settings.expiryMonths,
-        welcomePointsRedeemed: redemptionDetails.welcomePointsRedeemed,
-        earnedOrAdjustedPointsRedeemed:
-          requestedPoints - redemptionDetails.welcomePointsRedeemed,
-        welcomePointsExpiry: redemptionDetails.welcomeExpiresAt,
+        welcomePointsRedeemed,
+        earnedOrAdjustedPointsRedeemed: requestedPoints,
+        welcomeRewardSourceId: useWelcomeReward ? welcomeRewardLot?.id ?? null : null,
+        welcomePointsExpiry: useWelcomeReward ? welcomeRewardLot?.expiresAt ?? null : null,
         welcomeMinimumSubtotal: welcomeMinimumCents / 100,
       },
     },
@@ -578,7 +656,15 @@ export function serializeLoyaltyPricing(pricing) {
     availablePoints: loyalty.availablePoints,
     pendingPoints: loyalty.pendingPoints,
     welcomePointsAvailable: loyalty.welcomePointsAvailable,
+    welcomeRewardAvailable: loyalty.welcomeRewardAvailable,
+    welcomeRewardPoints: loyalty.welcomeRewardPoints,
+    welcomeRewardValue: loyalty.welcomeRewardValueCents / 100,
+    welcomeRewardApplied: loyalty.welcomeRewardApplied,
+    welcomePointsRedeemed: loyalty.welcomePointsRedeemed,
+    earnedPointsAvailable: loyalty.earnedPointsAvailable,
+    earnedPointsRedeemed: loyalty.earnedPointsRedeemed,
     welcomeMinimumSubtotal: loyalty.welcomeMinimumSubtotalCents / 100,
+    eligibleProductSubtotal: loyalty.eligibleProductSubtotalCents / 100,
     welcomePointsEligible: loyalty.welcomePointsEligible,
     pointValue: loyalty.pointValueCents / 100,
     walletBalance: loyalty.walletBalanceCents / 100,
@@ -602,6 +688,51 @@ export async function debitOrderLoyalty(database, order, pricing) {
   const points = pricing.pointsRedeemed;
   const walletCents = pricing.walletCreditUsedCents;
   if (points === 0 && walletCents === 0) return [];
+
+  const loyaltySnapshot = pricing.pricingBreakdown?.loyalty;
+  const welcomePoints = Number(loyaltySnapshot?.welcomePointsRedeemed ?? 0);
+  if (welcomePoints > 0) {
+    const sourceId = typeof loyaltySnapshot?.welcomeRewardSourceId === "string"
+      ? loyaltySnapshot.welcomeRewardSourceId
+      : "";
+    // Validate against the actual granted lot rather than a fixed constant,
+    // since welcome/promo grants now vary by promo code (e.g. 3,000 or 5,000).
+    const sourceTransaction = sourceId
+      ? await database.loyaltyPointTransaction.findUnique({ where: { id: sourceId } })
+      : null;
+    if (
+      !sourceTransaction
+      || sourceTransaction.userId !== order.userId
+      || !WELCOME_POINT_CREDIT_TYPES.has(sourceTransaction.type)
+      || welcomePoints !== sourceTransaction.points
+    ) {
+      throw new LoyaltyError(
+        409,
+        "INVALID_WELCOME_REWARD_REDEMPTION",
+        "The welcome reward selection is invalid. Refresh checkout and try again."
+      );
+    }
+    const marker = await database.loyaltyPointTransaction.createMany({
+      data: [{
+        userId: order.userId,
+        orderId: order.id,
+        type: "REDEMPTION",
+        points: 0,
+        balanceAfter: pricing.loyalty.availablePoints,
+        status: "ACTIVE",
+        description: `Atomic welcome reward reserved for order ${order.orderNumber}.`,
+        idempotencyKey: `welcome-reward:${sourceId}:consumed`,
+      }],
+      skipDuplicates: true,
+    });
+    if (marker.count !== 1) {
+      throw new LoyaltyError(
+        409,
+        "WELCOME_REWARD_ALREADY_USED",
+        "The one-time welcome reward has already been used."
+      );
+    }
+  }
 
   const updated = await database.loyaltyAccount.updateMany({
     where: {
@@ -634,9 +765,6 @@ export async function debitOrderLoyalty(database, order, pricing) {
   });
   const notifications = [];
   if (points > 0) {
-    const welcomePoints = Number(
-      pricing.pricingBreakdown?.loyalty?.welcomePointsRedeemed ?? 0
-    );
     await database.loyaltyPointTransaction.create({
       data: {
         userId: order.userId,

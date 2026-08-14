@@ -24,10 +24,33 @@ test("Categories Step 2 remains the finalized Supply Lists feature in EN and AR"
     englishSteps.step2.description,
     "Save frequently used products into reusable supply lists for faster reordering and easier clinic purchasing."
   );
-  assert.equal(englishSteps.step3.title, "Get Rewarded from Day One");
+  assert.equal(englishSteps.step3.title, "Earn Rewards as You Shop");
+  assert.doesNotMatch(englishSteps.step3.description, /sign.?up|welcome|5,000/i);
   assert.equal(englishSteps.step4.title, "Checkout & Track Orders");
   assert.equal(arabicSteps.step2.title, "احفظ في قوائم التوريد");
   assert.doesNotMatch(englishSteps.step2.title, /Clinic Branches|Clinic Locations/);
+});
+
+test("About timeline uses the four approved non-duplicative clinic workflows and real routes", () => {
+  const englishSteps = english.aboutPage.workflow.steps;
+  const arabicSteps = arabic.aboutPage.workflow.steps;
+
+  assert.deepEqual(Object.keys(englishSteps), ["clinicBranches", "freeDelivery", "quotes", "productRequest"]);
+  assert.equal(englishSteps.clinicBranches.title, "Manage Your Clinic Branches");
+  assert.equal(englishSteps.freeDelivery.title, "Free Delivery Days");
+  assert.equal(englishSteps.quotes.title, "Request a Custom Quote");
+  assert.equal(englishSteps.productRequest.title, "Can't Find It? Request It");
+  assert.equal(arabicSteps.clinicBranches.title, "إدارة فروع عيادتك");
+  assert.equal(arabicSteps.freeDelivery.title, "أيام التوصيل المجاني");
+  assert.equal(arabicSteps.quotes.title, "اطلب عرض سعر مخصصًا");
+  assert.equal(arabicSteps.productRequest.title, "لم تجده؟ اطلبه");
+  for (const route of [
+    "/account/clinic-branches",
+    "/shipping-delivery",
+    "/account/quotes",
+    "/account/product-requests",
+  ]) assert.match(about, new RegExp(route));
+  assert.doesNotMatch(about, /id: "wishlist"|id: "supplyLists"|id: "productSupport"/);
 });
 
 test("Categories and About timelines share the requested responsive title scale", () => {

@@ -5,6 +5,7 @@ import { SEO } from "@/components/SEO";
 import { SectionReveal } from "@/components/dental/SectionReveal";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCatalog } from "@/context/CatalogContext";
+import { useBrandLogoSource } from "@/hooks/useBrandLogoSource";
 
 type BrandPreview = {
   id: string;
@@ -229,7 +230,7 @@ function HeroSection({ brands }: { brands: BrandPreview[] }) {
       >
         <div className="relative grid min-h-[560px] grid-cols-1 gap-8 overflow-hidden px-5 py-12 sm:px-10 lg:grid-cols-[1fr_1.12fr_1fr] lg:px-14 lg:py-16">
           <div className="pointer-events-none absolute bottom-10 left-1/2 z-0 hidden -translate-x-1/2 select-none whitespace-nowrap font-display text-[170px] font-bold leading-none tracking-[-0.08em] text-[#050505]/[0.025] lg:block">
-            X Dental
+            Dentorax
           </div>
 
           <div className="relative z-10 flex flex-col justify-between gap-10">
@@ -306,9 +307,9 @@ const HERO_LOGO_CLASS_BY_SLUG: Record<string, string> = {
 const HERO_LOGO_CLASS_DEFAULT = "h-[80%] w-[80%] object-contain mix-blend-multiply";
 
 function HeroBrandCard({ brand }: { brand: BrandPreview }) {
-  const [logoFailed, setLogoFailed] = useState(false);
+  const { logoUrl, handleLogoError } = useBrandLogoSource(brand);
   const initials = brand.initials ?? getInitials(brand.name);
-  const showLogo = Boolean(brand.logoUrl) && !logoFailed;
+  const showLogo = Boolean(logoUrl);
 
   return (
     <Link
@@ -322,12 +323,12 @@ function HeroBrandCard({ brand }: { brand: BrandPreview }) {
     >
       {showLogo ? (
         <img
-          src={brand.logoUrl ?? undefined}
+          src={logoUrl ?? undefined}
           alt=""
           aria-hidden="true"
           loading="lazy"
           decoding="async"
-          onError={() => setLogoFailed(true)}
+          onError={handleLogoError}
           className={HERO_LOGO_CLASS_BY_SLUG[brand.slug] ?? HERO_LOGO_CLASS_DEFAULT}
         />
       ) : (
@@ -354,21 +355,21 @@ function BrandTile({ brand }: { brand: BrandPreview }) {
 }
 
 function BrandMark({ brand }: { brand: BrandPreview }) {
-  const [logoFailed, setLogoFailed] = useState(false);
+  const { logoUrl, handleLogoError } = useBrandLogoSource(brand);
   const initials = brand.initials ?? getInitials(brand.name);
-  const showLogo = Boolean(brand.logoUrl) && !logoFailed;
+  const showLogo = Boolean(logoUrl);
   const isFullBleed = FULL_BLEED_BRAND_LOGO_SLUGS.has(brand.slug);
 
   return (
     <span className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[18px] border border-[var(--xd-gold-border-soft)] bg-[#FEFEFE] shadow-[0_4px_12px_rgba(5,5,5,0.04)] sm:h-24 sm:w-24">
       {showLogo ? (
         <img
-          src={brand.logoUrl ?? undefined}
+          src={logoUrl ?? undefined}
           alt=""
           aria-hidden="true"
           loading="lazy"
           decoding="async"
-          onError={() => setLogoFailed(true)}
+          onError={handleLogoError}
           className={isFullBleed ? "block h-full w-full object-cover" : "h-[78%] w-[78%] object-contain"}
         />
       ) : (
@@ -477,7 +478,7 @@ function PartnersSection() {
               <p className="mt-7 max-w-[340px] text-[14px] leading-[24px] text-[#717182]">
                 {t("brandsPage.partnersBody", {
                   fallback:
-                    "Browse reliable manufacturers and suppliers represented in the X Dental catalog.",
+                    "Browse reliable manufacturers and suppliers represented in the Dentorax catalog.",
                 })}
               </p>
             </div>

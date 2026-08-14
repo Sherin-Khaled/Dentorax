@@ -14,6 +14,7 @@ import {
   parseRequestedWalletCents,
   restoreOrderLoyalty,
 } from "./loyalty.service.js";
+import { endOfWeeklyRecurringWindow } from "./scheduledPromotion.service.js";
 
 const settings = {
   id: "default",
@@ -45,7 +46,7 @@ function pricingDatabase({
   availablePoints = 1_000,
   pendingPoints = 0,
   walletBalance = 100,
-  transactions = [],
+  transactions,
 } = {}) {
   const account = {
     userId: "customer-1",
@@ -55,6 +56,14 @@ function pricingDatabase({
     lifetimeRedeemedPoints: 0,
     walletBalance,
   };
+  const pointTransactions = transactions ?? (availablePoints > 0 ? [{
+    id: "earned-balance",
+    type: "ORDER_EARN",
+    points: availablePoints,
+    status: "ACTIVE",
+    expiresAt: new Date("2027-08-01T00:00:00Z"),
+    createdAt: new Date("2026-08-01T00:00:00Z"),
+  }] : []);
   return {
     account,
     loyaltyProgramSettings: {
@@ -73,7 +82,7 @@ function pricingDatabase({
     loyaltyPointTransaction: {
       findMany: async ({ where }) => {
         assert.equal(where.userId, "customer-1");
-        return transactions;
+        return pointTransactions;
       },
     },
   };
@@ -153,9 +162,27 @@ test("wallet amount parsing is exact to cents and rejects malformed values", () 
   assert.throws(() => parseRequestedWalletCents("-1"), LoyaltyError);
 });
 
-test("new public customer receives exactly one immediately available welcome grant", async () => {
+const RASHAD500 = {
+  code: "Rashad500",
+  points: 5_000,
+  weekdays: [5, 6],
+  timezone: "Africa/Cairo",
+  isActive: true,
+};
+const GOLD300 = {
+  code: "Gold300",
+  points: 3_000,
+  weekdays: [5, 6],
+  timezone: "Africa/Cairo",
+  isActive: true,
+};
+const FRIDAY_IN_CAIRO = new Date("2026-08-14T10:00:00Z");
+const SUNDAY_IN_CAIRO = new Date("2026-08-16T10:00:00Z");
+
+function welcomePromoDatabase({ promos = [RASHAD500, GOLD300] } = {}) {
   const calls = { point: 0, notification: 0 };
   const pointRows = new Map();
+  const notifications = [];
   const account = {
     userId: "new-customer",
     availablePoints: 0,
@@ -163,7 +190,12 @@ test("new public customer receives exactly one immediately available welcome gra
     lifetimeEarnedPoints: 0,
   };
   const database = {
-    loyaltyProgramSettings: { upsert: async () => settings },
+    welcomePromoCode: {
+      findFirst: async ({ where }) => {
+        const code = String(where.code.equals).toLowerCase();
+        return promos.find((promo) => promo.code.toLowerCase() === code) ?? null;
+      },
+    },
     loyaltyAccount: {
       upsert: async () => account,
       update: async ({ data }) => {
@@ -176,28 +208,124 @@ test("new public customer receives exactly one immediately available welcome gra
       findUnique: async ({ where }) => pointRows.get(where.idempotencyKey) ?? null,
       create: async ({ data }) => {
         calls.point += 1;
-        assert.equal(data.idempotencyKey, "welcome:new-customer:granted");
         assert.equal(data.status, "ACTIVE");
         assert.equal(data.type, "WELCOME_GRANTED");
         pointRows.set(data.idempotencyKey, data);
-        return { id: "welcome-row", ...data };
+        return { id: `row-${calls.point}`, ...data };
       },
     },
     notification: {
       findUnique: async () => null,
       create: async ({ data }) => {
         calls.notification += 1;
+        notifications.push(data);
         return data;
       },
     },
   };
-  const grantedAt = new Date("2026-08-02T10:00:00Z");
-  await initializeNewCustomerLoyalty(database, "new-customer", grantedAt);
-  await initializeNewCustomerLoyalty(database, "new-customer", grantedAt);
+  return { database, account, calls, notifications };
+}
+
+test("registering without a promo code grants zero promotional points", async () => {
+  const { database, account, calls } = welcomePromoDatabase();
+  const result = await initializeNewCustomerLoyalty(database, "new-customer", {
+    now: FRIDAY_IN_CAIRO,
+  });
+  assert.equal(account.availablePoints, 0);
+  assert.equal(result.granted, false);
+  assert.deepEqual(result.promo, { status: "none" });
+  assert.deepEqual(calls, { point: 0, notification: 0 });
+});
+
+test("registering with an unknown promo code grants zero points with an invalid result, not a thrown error", async () => {
+  const { database, account, calls } = welcomePromoDatabase();
+  const result = await initializeNewCustomerLoyalty(database, "new-customer", {
+    now: FRIDAY_IN_CAIRO,
+    promoCode: "NotARealCode",
+  });
+  assert.equal(account.availablePoints, 0);
+  assert.equal(result.granted, false);
+  assert.equal(result.promo.status, "invalid");
+  assert.equal(result.promo.reason, "unknown");
+  assert.deepEqual(calls, { point: 0, notification: 0 });
+});
+
+test("Gold300 grants exactly 3,000 points during the Friday/Saturday campaign window", async () => {
+  const { database, account, notifications } = welcomePromoDatabase();
+  const result = await initializeNewCustomerLoyalty(database, "new-customer", {
+    now: FRIDAY_IN_CAIRO,
+    promoCode: "Gold300",
+  });
+  assert.equal(account.availablePoints, 3_000);
+  assert.equal(result.granted, true);
+  assert.equal(result.promo.status, "granted");
+  assert.equal(result.promo.points, 3_000);
+  assert.equal(notifications.length, 1);
+  assert.match(notifications[0].body, /3000 promotional points added/);
+  assert.doesNotMatch(notifications[0].body, /30 days/);
+});
+
+test("Rashad500 grants exactly 5,000 points during the Friday/Saturday campaign window, case-insensitively", async () => {
+  const { database, account, notifications } = welcomePromoDatabase();
+  const result = await initializeNewCustomerLoyalty(database, "new-customer", {
+    now: FRIDAY_IN_CAIRO,
+    promoCode: "rashad500",
+  });
   assert.equal(account.availablePoints, 5_000);
-  assert.equal(account.pendingPoints, 0);
-  assert.equal(pointRows.get("welcome:new-customer:granted").expiresAt.toISOString(), "2026-09-01T10:00:00.000Z");
+  assert.equal(result.promo.status, "granted");
+  assert.equal(result.promo.points, 5_000);
+  assert.equal(result.promo.code, "Rashad500");
+  assert.match(notifications[0].body, /5000 promotional points added/);
+  assert.doesNotMatch(notifications[0].body, /30 days/);
+});
+
+test("a valid promo code outside the Friday/Saturday window grants zero points", async () => {
+  const { database, account, calls } = welcomePromoDatabase();
+  const result = await initializeNewCustomerLoyalty(database, "new-customer", {
+    now: SUNDAY_IN_CAIRO,
+    promoCode: "Rashad500",
+  });
+  assert.equal(account.availablePoints, 0);
+  assert.equal(result.granted, false);
+  assert.equal(result.promo.status, "invalid");
+  assert.equal(result.promo.reason, "outside_campaign");
+  assert.deepEqual(calls, { point: 0, notification: 0 });
+});
+
+test("promo code grant is idempotent across repeated registration attempts", async () => {
+  const { database, account, calls } = welcomePromoDatabase();
+  await initializeNewCustomerLoyalty(database, "new-customer", {
+    now: FRIDAY_IN_CAIRO,
+    promoCode: "Rashad500",
+  });
+  const second = await initializeNewCustomerLoyalty(database, "new-customer", {
+    now: FRIDAY_IN_CAIRO,
+    promoCode: "Rashad500",
+  });
+  assert.equal(account.availablePoints, 5_000);
+  assert.equal(second.granted, false);
+  assert.equal(second.promo.status, "already_granted");
   assert.deepEqual(calls, { point: 1, notification: 1 });
+});
+
+test("promo point expiry is the end of the current Friday/Saturday campaign window, not a fixed duration", () => {
+  const fridayExpiry = endOfWeeklyRecurringWindow(RASHAD500, FRIDAY_IN_CAIRO);
+  const saturdayExpiry = endOfWeeklyRecurringWindow(
+    RASHAD500,
+    new Date("2026-08-15T20:00:00Z")
+  );
+  assert.equal(
+    fridayExpiry.toLocaleString("en-US", { timeZone: "Africa/Cairo", hour12: false }),
+    "8/16/2026, 00:00:00"
+  );
+  assert.equal(fridayExpiry.getTime(), saturdayExpiry.getTime());
+  assert.equal(
+    endOfWeeklyRecurringWindow(RASHAD500, SUNDAY_IN_CAIRO).toLocaleString("en-US", {
+      timeZone: "Africa/Cairo",
+      hour12: false,
+    }),
+    "8/17/2026, 00:00:00"
+  );
 });
 
 test("enabling launch loyalty settings does not automatically credit existing customers", async () => {
@@ -292,27 +420,67 @@ test("signup points enforce EGP 5,000 and are usable on the first order without 
     applyLoyaltyPricing(database, {
       userId: "customer-1",
       pricing: basePricing({ subtotalCents: 499_900, monetaryDiscountCents: 0 }),
-      requestedPoints: 100,
+      useWelcomeReward: true,
       now: new Date("2026-08-02T11:00:00Z"),
     }),
     (error) => error instanceof LoyaltyError
-      && error.code === "POINTS_MINIMUM_SUBTOTAL"
-      && error.message === "Points can be redeemed on orders of EGP 5,000 or more."
+      && error.code === "WELCOME_REWARD_MINIMUM_SUBTOTAL"
+      && error.message === "The welcome reward is available on eligible orders of EGP 5,000 or more."
   );
 
   const eligible = await applyLoyaltyPricing(database, {
     userId: "customer-1",
     pricing: basePricing({ subtotalCents: 500_000, monetaryDiscountCents: 0 }),
-    requestedPoints: 5_000,
+    useWelcomeReward: true,
     now: new Date("2026-08-02T11:00:00Z"),
   });
   assert.equal(eligible.pointsRedemptionValueCents, 50_000);
   assert.equal(eligible.shippingCents, 5_000);
   assert.equal(eligible.totalCents, 455_000);
   assert.equal(eligible.pricingBreakdown.loyalty.welcomePointsRedeemed, 5_000);
+  assert.equal(eligible.pricingBreakdown.loyalty.earnedOrAdjustedPointsRedeemed, 0);
 });
 
-test("all point redemption is rejected below EGP 5,000, including earned points", async () => {
+test("partial welcome redemption is rejected while mixed earned points remain flexible", async () => {
+  const transactions = [
+    {
+      id: "welcome-atomic",
+      type: "WELCOME_GRANTED",
+      points: 5_000,
+      status: "ACTIVE",
+      expiresAt: new Date("2026-09-01T10:00:00Z"),
+      createdAt: new Date("2026-08-01T10:00:00Z"),
+    },
+    {
+      id: "earned-800",
+      type: "ORDER_EARN",
+      points: 800,
+      status: "ACTIVE",
+      expiresAt: new Date("2027-08-01T10:00:00Z"),
+      createdAt: new Date("2026-08-02T10:00:00Z"),
+    },
+  ];
+  const database = pricingDatabase({ availablePoints: 5_800, transactions });
+  await assert.rejects(
+    applyLoyaltyPricing(database, {
+      userId: "customer-1",
+      pricing: basePricing({ subtotalCents: 500_000, monetaryDiscountCents: 0 }),
+      requestedPoints: 1_000,
+    }),
+    (error) => error instanceof LoyaltyError && error.code === "INSUFFICIENT_EARNED_POINTS"
+  );
+  const mixed = await applyLoyaltyPricing(database, {
+    userId: "customer-1",
+    pricing: basePricing({ subtotalCents: 1_000_000, monetaryDiscountCents: 0 }),
+    useWelcomeReward: true,
+    requestedPoints: 800,
+  });
+  assert.equal(mixed.pointsRedeemed, 5_800);
+  assert.equal(mixed.pricingBreakdown.loyalty.welcomePointsRedeemed, 5_000);
+  assert.equal(mixed.pricingBreakdown.loyalty.earnedOrAdjustedPointsRedeemed, 800);
+});
+
+test("the EGP 5,000 minimum blocks welcome/promo points but never blocks normal earned points", async () => {
   const transactions = [
     {
       id: "welcome-1",
@@ -332,15 +500,68 @@ test("all point redemption is rejected below EGP 5,000, including earned points"
     },
   ];
   const database = pricingDatabase({ availablePoints: 5_100, transactions });
+  const belowMinimum = basePricing({ subtotalCents: 499_900, monetaryDiscountCents: 0 });
+  const now = new Date("2026-08-02T11:00:00Z");
+
+  // Welcome/promo points remain gated by the EGP 5,000 minimum.
   await assert.rejects(
     applyLoyaltyPricing(database, {
       userId: "customer-1",
-      pricing: basePricing({ subtotalCents: 499_900, monetaryDiscountCents: 0 }),
-      requestedPoints: 100,
-      now: new Date("2026-08-02T11:00:00Z"),
+      pricing: belowMinimum,
+      useWelcomeReward: true,
+      now,
     }),
-    (error) => error instanceof LoyaltyError && error.code === "POINTS_MINIMUM_SUBTOTAL"
+    (error) => error instanceof LoyaltyError && error.code === "WELCOME_REWARD_MINIMUM_SUBTOTAL"
   );
+
+  // Regular earned points must NOT be subject to the same EGP 5,000 gate.
+  const earnedBelowMinimum = await applyLoyaltyPricing(database, {
+    userId: "customer-1",
+    pricing: belowMinimum,
+    requestedPoints: 100,
+    now,
+  });
+  assert.equal(earnedBelowMinimum.pricingBreakdown.loyalty.earnedOrAdjustedPointsRedeemed, 100);
+  assert.equal(earnedBelowMinimum.pointsRedemptionValueCents, 1_000);
+});
+
+test("exactly EGP 5,000 is eligible for the welcome/promo reward; a cent under is not", async () => {
+  const transactions = [{
+    id: "welcome-1",
+    type: "WELCOME_GRANTED",
+    points: 5_000,
+    status: "ACTIVE",
+    expiresAt: new Date("2026-09-01T10:00:00Z"),
+    createdAt: new Date("2026-08-01T10:00:00Z"),
+  }];
+  const database = pricingDatabase({ availablePoints: 5_000, transactions });
+  const now = new Date("2026-08-02T11:00:00Z");
+
+  await assert.rejects(
+    applyLoyaltyPricing(database, {
+      userId: "customer-1",
+      pricing: basePricing({ subtotalCents: 499_999, monetaryDiscountCents: 0 }),
+      useWelcomeReward: true,
+      now,
+    }),
+    (error) => error instanceof LoyaltyError && error.code === "WELCOME_REWARD_MINIMUM_SUBTOTAL"
+  );
+
+  const exact = await applyLoyaltyPricing(database, {
+    userId: "customer-1",
+    pricing: basePricing({ subtotalCents: 500_000, monetaryDiscountCents: 0 }),
+    useWelcomeReward: true,
+    now,
+  });
+  assert.equal(exact.pricingBreakdown.loyalty.welcomePointsRedeemed, 5_000);
+
+  const above = await applyLoyaltyPricing(database, {
+    userId: "customer-1",
+    pricing: basePricing({ subtotalCents: 500_001, monetaryDiscountCents: 0 }),
+    useWelcomeReward: true,
+    now,
+  });
+  assert.equal(above.pricingBreakdown.loyalty.welcomePointsRedeemed, 5_000);
 });
 
 test("welcome and order points cannot activate before delivery", async () => {
@@ -376,6 +597,86 @@ test("transactional redemption rejects concurrent balance loss before creating a
     (error) => error instanceof LoyaltyError && error.code === "LOYALTY_BALANCE_CHANGED"
   );
   assert.equal(pointCreates, 0);
+});
+
+test("atomic welcome reward consumption is unique per source grant", async () => {
+  const markers = new Set();
+  let accountDebits = 0;
+  const database = {
+    loyaltyPointTransaction: {
+      findUnique: async ({ where }) =>
+        where.id === "welcome-source-1"
+          ? { id: "welcome-source-1", userId: "customer-1", type: "WELCOME_GRANTED", points: 5_000 }
+          : null,
+      createMany: async ({ data }) => {
+        const key = data[0].idempotencyKey;
+        if (markers.has(key)) return { count: 0 };
+        markers.add(key);
+        return { count: 1 };
+      },
+      create: async () => undefined,
+    },
+    loyaltyAccount: {
+      updateMany: async () => { accountDebits += 1; return { count: 1 }; },
+      findUnique: async () => ({ availablePoints: 0, walletBalance: 0 }),
+    },
+    notification: { findUnique: async () => null, create: async ({ data }) => data },
+  };
+  const pricing = {
+    pointsRedeemed: 5_000,
+    walletCreditUsedCents: 0,
+    loyalty: { availablePoints: 5_000 },
+    pricingBreakdown: {
+      loyalty: { welcomePointsRedeemed: 5_000, welcomeRewardSourceId: "welcome-source-1" },
+    },
+  };
+  await debitOrderLoyalty(
+    database,
+    { id: "order-1", userId: "customer-1", orderNumber: "ORD-1" },
+    pricing
+  );
+  await assert.rejects(
+    debitOrderLoyalty(
+      database,
+      { id: "order-2", userId: "customer-1", orderNumber: "ORD-2" },
+      pricing
+    ),
+    (error) => error instanceof LoyaltyError && error.code === "WELCOME_REWARD_ALREADY_USED"
+  );
+  assert.equal(accountDebits, 1);
+});
+
+test("welcome/promo redemption is rejected when the claimed points do not match the source grant (e.g. Gold300's 3,000)", async () => {
+  const database = {
+    loyaltyPointTransaction: {
+      findUnique: async ({ where }) =>
+        where.id === "gold300-source"
+          ? { id: "gold300-source", userId: "customer-1", type: "WELCOME_GRANTED", points: 3_000 }
+          : null,
+      createMany: async () => ({ count: 1 }),
+      create: async () => undefined,
+    },
+    loyaltyAccount: {
+      updateMany: async () => ({ count: 1 }),
+      findUnique: async () => ({ availablePoints: 0, walletBalance: 0 }),
+    },
+    notification: { findUnique: async () => null, create: async ({ data }) => data },
+  };
+  await assert.rejects(
+    debitOrderLoyalty(
+      database,
+      { id: "order-1", userId: "customer-1", orderNumber: "ORD-1" },
+      {
+        pointsRedeemed: 5_000,
+        walletCreditUsedCents: 0,
+        loyalty: { availablePoints: 5_000 },
+        pricingBreakdown: {
+          loyalty: { welcomePointsRedeemed: 5_000, welcomeRewardSourceId: "gold300-source" },
+        },
+      }
+    ),
+    (error) => error instanceof LoyaltyError && error.code === "INVALID_WELCOME_REWARD_REDEMPTION"
+  );
 });
 
 test("cancellation restoration returns points and wallet only once", async () => {

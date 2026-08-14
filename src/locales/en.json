@@ -14,6 +14,56 @@
     "toggleMenu": "Toggle menu",
     "language": "EN"
   },
+  "featureTour": {
+    "dialogLabel": "Dentorax quick tour",
+    "stepCounter": "{current} of {total}",
+    "back": "Back",
+    "next": "Next",
+    "skip": "Skip",
+    "finish": "Start Exploring",
+    "close": "Close tour",
+    "steps": {
+      "welcome": {
+        "title": "Welcome to Dentorax",
+        "description": "A 60-second look at the tools that help you order faster — where to find them and how to use them right away."
+      },
+      "delivery": {
+        "title": "Delivery, by your zone",
+        "description": "Delivery fees and any free-delivery offers depend on your area and saved clinic location. Check what applies near you.",
+        "cta": "View Delivery Info"
+      },
+      "payment": {
+        "title": "Simple, secure checkout",
+        "description": "Every order today is paid by Cash on Delivery — no card details needed. See the full ordering steps before you check out.",
+        "cta": "How to Order"
+      },
+      "rewards": {
+        "title": "Rewards & Wallet",
+        "description": "Earn points as you shop and redeem them on future orders. New accounts also start with welcome points you can use once you qualify.",
+        "cta": "Open My Wallet"
+      },
+      "productRequest": {
+        "title": "Can't find it? Just ask",
+        "description": "Send us a product request and our team will help source it for your clinic.",
+        "cta": "Request a Product"
+      },
+      "trackOrder": {
+        "title": "Track any order",
+        "description": "Follow your order status anytime with just your order number and phone — no account needed.",
+        "cta": "Track Order"
+      },
+      "wishlist": {
+        "title": "Save for later",
+        "description": "Tap the heart icon on any product to save it to your wishlist and come back to it anytime.",
+        "cta": "View Wishlist"
+      },
+      "support": {
+        "title": "We're here to help",
+        "description": "Reach our team anytime through live chat, or contact us directly at contact@dentora-x.com.",
+        "cta": "Contact Us"
+      }
+    }
+  },
   "globalSearch": {
     "ariaLabel": "Global site search",
     "placeholder": "Search products, categories, brands, or pages",
@@ -104,7 +154,7 @@
     "allProducts": "All Products",
     "weeklyOffers": "Weekly Offers",
     "newArrivals": "New Arrivals",
-    "bestSellers": "Best Sellers",
+    "bestSellers": "Best Prices",
     "fastDelivery": "Fast Delivery",
     "hotDeals": "Hot Deals",
     "limitedStock": "Limited Stock",
@@ -844,7 +894,7 @@
       "saveError": "The image could not be saved.",
       "urlValidation": "Enter a valid http or https image URL.",
       "rightsConfirmedLabel": "Rights confirmed",
-      "rightsConfirmedHint": "Only confirm this if X Dental Store has permission to publish this image publicly.",
+      "rightsConfirmedHint": "Only confirm this if Dentorax has permission to publish this image publicly.",
       "reviewOnlyLabel": "Review only — not public",
       "reviewOnlyBanner": "This product has images pending rights confirmation. They are never shown to customers.",
       "primary": "Primary",
@@ -1197,7 +1247,7 @@
     "subscribed": "You're subscribed. Thank you.",
     "subscribeError": "The subscription could not be completed. Please try again.",
     "emailPlaceholder": "your@email.com",
-    "copyright": "© 2026 X Dental Store. All rights reserved.",
+    "copyright": "© 2026 Dentorax. All rights reserved.",
     "creditPrefix": "Designed & developed by",
     "creditAriaLabel": "Open SK Behance portfolio",
     "privacy": "Privacy Policy",
@@ -1205,7 +1255,10 @@
     "contact": {
       "ordersWhatsApp": "Orders WhatsApp",
       "mainSupport": "Main Support",
-      "branch": "Branch"
+      "branch": "Branch",
+      "email": "Email",
+      "address": "Address",
+      "addressValue": "18 St Gheet Al Eda - Abdeen - Cairo"
     },
     "sections": {
       "shop": "Shop",
@@ -1217,7 +1270,7 @@
       "allProducts": "All Products",
       "weeklyOffers": "Weekly Offers",
       "newArrivals": "New Arrivals",
-      "bestSellers": "Best Sellers",
+      "bestSellers": "Best Prices",
       "requestQuote": "Request a Quote",
       "endodontics": "Endodontics",
       "dentalInstruments": "Dental Instruments",
@@ -1330,7 +1383,7 @@
       "ariaLabel": "Payment partners"
     },
     "promotionalFlyers": {
-      "ariaLabel": "X Dental Store promotional flyers",
+      "ariaLabel": "Dentorax promotional flyers",
       "slideLabel": "Promotional flyer {current} of {total}",
       "dotsLabel": "Promotional flyer navigation",
       "goToSlide": "Show promotional flyer {number}",
@@ -1398,10 +1451,12 @@
       "categoriesSubtitle": "Browse products by dental specialty and everyday clinic need.",
       "weeklyTitle": "Weekly Offers",
       "weeklySubtitle": "Limited-time deals on everyday dental supplies and clinic essentials.",
-      "whyTitle": "Why Clinics Choose X Dental Store",
+      "weeklyEmpty": "Weekly offers will appear here when active catalogue sale prices are available.",
+      "whyTitle": "Why Clinics Choose Dentorax",
       "whySubtitle": "Better value, trusted quality, and convenient service designed around the daily needs of dental clinics.",
-      "bestSellersTitle": "Best Sellers",
-      "bestSellersSubtitle": "Popular products ordered by dental clinics and professionals.",
+      "bestSellersTitle": "Best Prices",
+      "bestSellersSubtitle": "Our strongest genuine catalogue savings, ranked by real discount value.",
+      "bestSellersEmpty": "Best Price products will appear here when genuine catalogue savings are available.",
       "trustedBrandsEyebrow": "Our Partners",
       "trustedBrandsTitle": "Trusted Brands",
       "trustedBrandsSubtitle": "Explore dental supplies from reliable brands and suppliers trusted by clinics and professionals.",
@@ -1415,6 +1470,7 @@
       "recommendedSubtitle": "Curated products based on common clinic needs and everyday dental procedures.",
       "fastDeliveryTitle": "Fast Delivery Items",
       "fastDeliverySubtitle": "Ready-to-ship essentials available for faster clinic restocking.",
+      "fastDeliveryEmpty": "Fast Delivery products will appear here after approved delivery assignments are available.",
       "viewFastDelivery": "View Fast Delivery"
     },
     "features": {
@@ -1463,6 +1519,7 @@
     "catalogEyebrow": "Product Catalog",
     "titleAll": "All Dental Supplies",
     "titleWeekly": "Weekly Offers",
+    "titleBestPrices": "Best Prices",
     "fallbackTitle": "Dental Supplies",
     "intro": "Browse, filter, and compare trusted dental products for clinics, professionals, and everyday practice needs.",
     "showingResults": "Showing {count} results",
@@ -1487,7 +1544,7 @@
       "hot": "Hot Deals",
       "fast": "Fast Delivery",
       "new": "New Arrivals",
-      "best": "Best Selling",
+      "best": "Best Prices",
       "limited": "Limited Stock",
       "clinic": "Clinic Essentials"
     },
@@ -1622,14 +1679,14 @@
       "requestQuote": "Request a Quote"
     },
     "hero": {
-      "eyebrow": "About X Dental Store",
+      "eyebrow": "About Dentorax",
       "fullTitle": "Smarter dental supply purchasing for clinics and professionals.",
       "titleLine1": "Smarter dental",
       "titleLine2": "supply purchasing",
       "titleLine3": "for clinics and professionals.",
-      "description": "X Dental Store exists to make clinic purchasing clearer: organized catalogs, saved supply lists, quote support, and order help for dental teams.",
+      "description": "Dentorax exists to make clinic purchasing clearer: organized catalogs, saved supply lists, quote support, and order help for dental teams.",
       "imageAlt": "Dental products",
-      "benefitsLabel": "X Dental Store benefits",
+      "benefitsLabel": "Dentorax benefits",
       "tags": {
         "trustedBrands": "Trusted Brands",
         "clinicSupplyLists": "Clinic Supply Lists",
@@ -1676,8 +1733,8 @@
       "eyebrow": "Why Choose Us",
       "title": "A better way to buy",
       "titleSecond": "dental supplies.",
-      "description": "At X Dental Store, we do more than supply products. We support clinics and dental professionals with trusted brands, competitive prices, and a smooth, reliable buying experience.",
-      "carouselLabel": "Why choose X Dental Store",
+      "description": "At Dentorax, we do more than supply products. We support clinics and dental professionals with trusted brands, competitive prices, and a smooth, reliable buying experience.",
+      "carouselLabel": "Why choose Dentorax",
       "showCard": "Show {title}",
       "items": {
         "trustedBrands": {
@@ -1707,7 +1764,7 @@
       "title": "Reliable products.",
       "titleSecond": "Clear support.",
       "titleThird": "Better clinic workflows.",
-      "description": "X Dental Store is built to make dental purchasing easier for clinics — from organized categories and trusted suppliers to quote support and tools that help teams reorder faster.",
+      "description": "Dentorax is built to make dental purchasing easier for clinics — from organized categories and trusted suppliers to quote support and tools that help teams reorder faster.",
       "items": {
         "curatedProducts": {
           "title": "Curated Dental Products",
@@ -1734,29 +1791,33 @@
       "navigationLabel": "Clinic purchasing steps",
       "goToStep": "Go to {step}",
       "steps": {
-        "wishlist": {
+        "clinicBranches": {
           "label": "Step 1",
-          "title": "Wishlist",
-          "description": "Save products you want to compare, reorder, or move into supply lists later.",
-          "imageAlt": "Dental products ready to add to a clinic wishlist"
+          "title": "Manage Your Clinic Branches",
+          "description": "Save and manage your clinic locations so ordering and delivery are easier across every branch.",
+          "cta": "Manage Clinic Locations",
+          "imageAlt": "Saved clinic locations linked to delivery areas"
         },
-        "supplyLists": {
+        "freeDelivery": {
           "label": "Step 2",
-          "title": "Supply Lists",
-          "description": "Create reusable lists for monthly essentials, branch needs, or specialty workflows.",
-          "imageAlt": "Dentist reviewing products for a clinic"
+          "title": "Free Delivery Days",
+          "description": "Get free delivery in eligible areas on selected days of the week, based on your saved delivery location.",
+          "cta": "View Delivery Details",
+          "imageAlt": "Free delivery eligibility based on a saved clinic location"
         },
         "quotes": {
           "label": "Step 3",
-          "title": "Quotes",
-          "description": "Request pricing for bulk orders, repeat purchases, or special clinic needs.",
-          "imageAlt": "Organized dental supplies for repeat purchasing"
+          "title": "Request a Custom Quote",
+          "description": "Request tailored pricing for bulk purchases, repeat orders, or special clinic requirements.",
+          "cta": "Request a Quote",
+          "imageAlt": "Custom quote request for clinic purchasing"
         },
-        "productSupport": {
+        "productRequest": {
           "label": "Step 4",
-          "title": "Product Requests / Support",
-          "description": "Ask our team to check availability for products not currently listed, or track orders and support tickets from your account.",
-          "imageAlt": "Dental clinic supported by X Dental Store"
+          "title": "Can't Find It? Request It",
+          "description": "Request products that are not currently listed and let our team help you source what your clinic needs.",
+          "cta": "Request a Product",
+          "imageAlt": "Requesting a dental product that is not currently listed"
         }
       }
     },
@@ -1787,6 +1848,7 @@
     "quickActions": {
       "Weekly Offers": "Weekly Offers",
       "Best Sellers": "Best Sellers",
+      "Best Prices": "Best Prices",
       "New Arrivals": "New Arrivals",
       "Top Machines": "Top Machines",
       "Fast Delivery": "Fast Delivery",
@@ -1794,9 +1856,9 @@
       "Clinic Essentials": "Clinic Essentials"
     },
     "helpEyebrow": "Clinic Purchasing",
-    "helpTitle": "How X Dental Store",
+    "helpTitle": "How Dentorax",
     "helpTitleSecond": "Helps Your Clinic",
-    "helpIntro": "From saved supply lists to quote requests, X Dental Store helps clinics order faster and manage dental supplies with less effort.",
+    "helpIntro": "From saved supply lists to quote requests, Dentorax helps clinics order faster and manage dental supplies with less effort.",
     "step1": "Step 1",
     "stepTitle": "Browse by Category",
     "stepBody": "Find dental products organized by specialty, treatment type, and clinic needs.",
@@ -1809,7 +1871,7 @@
           "label": "STEP 1",
           "title": "We're Here When You Need Us",
           "description": "Chat directly with our customer service team for product questions, order assistance, and support whenever you need it.",
-          "imageAlt": "X Dental customer service support"
+          "imageAlt": "Dentorax customer service support"
         },
         "step2": {
           "label": "STEP 2",
@@ -1819,9 +1881,9 @@
         },
         "step3": {
           "label": "STEP 3",
-          "title": "Get Rewarded from Day One",
-          "description": "Create your account and receive 5,000 welcome points immediately, ready to use on eligible orders from your first purchase.",
-          "imageAlt": "Welcome rewards available from the first eligible purchase",
+          "title": "Earn Rewards as You Shop",
+          "description": "Earn points on eligible completed orders and manage your available rewards from your wallet.",
+          "imageAlt": "Dentorax rewards and wallet for eligible purchases",
           "walletLink": "Rewards & Wallet",
           "checkoutLink": "Go to Checkout"
         },
@@ -1894,6 +1956,7 @@
       "Branch Contacts": "Branch Contacts",
       "Location Address": "18 St Gheet Al Eda - Abdeen - Cairo"
     },
+    "openInGoogleMaps": "Open in Google Maps",
     "contactLabels": {
       "Orders WhatsApp": "Orders WhatsApp",
       "Main Support": "Main Support",
@@ -1922,34 +1985,34 @@
     "toastErrorBody": "Your message could not be sent. Please try again or call us directly."
   },
   "privacyPage": {
-    "seoTitle": "Privacy Policy | X Dental Store",
-    "seoDescription": "Read how X Dental Store collects, uses, protects, and shares information related to accounts, orders, payments, delivery, support, and website services.",
+    "seoTitle": "Privacy Policy | Dentorax",
+    "seoDescription": "Read how Dentorax collects, uses, protects, and shares information related to accounts, orders, payments, delivery, support, and website services.",
     "eyebrow": "Legal",
     "title": "Privacy Policy",
-    "description": "Learn how X Dental Store collects, uses, protects, and shares your information.",
+    "description": "Learn how Dentorax collects, uses, protects, and shares your information.",
     "lastUpdatedLabel": "Last updated",
     "lastUpdatedDate": "July 2026",
     "sections": {
       "introduction": {
         "title": "Introduction",
-        "paragraph1": "This Privacy Policy explains how X Dental Store collects, uses, stores, protects, and shares information when you visit our website, create an account, browse products, request quotes, place orders, use supply lists, or contact support."
+        "paragraph1": "This Privacy Policy explains how Dentorax collects, uses, stores, protects, and shares information when you visit our website, create an account, browse products, request quotes, place orders, use supply lists, or contact support."
       },
       "informationCollected": {
         "title": "Information We Collect",
-        "paragraph1": "Account information may include your full name, email address, phone number, account preferences, selected clinic specialty or major, and authentication information needed to create and manage your account. Passwords and authentication data should be processed securely and stored using hashed or encrypted methods according to security best practices; X Dental Store should not store plain-text passwords.",
+        "paragraph1": "Account information may include your full name, email address, phone number, account preferences, selected clinic specialty or major, and authentication information needed to create and manage your account. Passwords and authentication data should be processed securely and stored using hashed or encrypted methods according to security best practices; Dentorax should not store plain-text passwords.",
         "paragraph2": "Clinic and order information may include clinic name, delivery address, billing details where collected, order history, quote requests, product requests, supply lists, wishlist and cart activity, and preferred brands, categories, or products.",
-        "paragraph3": "Payment information may include payment method status, transaction references, and payment confirmation status. X Dental Store does not need to store full card numbers when sensitive payment details are processed by a third-party payment provider, and those providers may handle payment data under their own policies.",
+        "paragraph3": "Payment information may include payment method status, transaction references, and payment confirmation status. Dentorax does not need to store full card numbers when sensitive payment details are processed by a third-party payment provider, and those providers may handle payment data under their own policies.",
         "paragraph4": "Communication information may include messages sent through contact forms, support requests, WhatsApp messages, call or email records, feedback, reviews, uploaded content, or other information you choose to send to us.",
         "paragraph5": "Technical and usage information may include IP address, browser and device type, pages visited, search queries, product or category interactions, cookies, local storage, error logs, and approximate location information from your browser, device, or network where available."
       },
       "informationUse": {
         "title": "How We Use Information",
-        "paragraph1": "X Dental Store uses information to create and manage user accounts, process orders and quote requests, manage supply lists, carts, wishlists, repeat purchases, product requests, delivery coordination, and customer support.",
+        "paragraph1": "Dentorax uses information to create and manage user accounts, process orders and quote requests, manage supply lists, carts, wishlists, repeat purchases, product requests, delivery coordination, and customer support.",
         "paragraph2": "We may also use information to personalize product recommendations, including Clinic Essentials based on clinic specialty, communicate about orders, delivery, support, offers, and account updates, improve website performance and user experience, prevent fraud or misuse, protect security, and meet legal, accounting, tax, or operational obligations."
       },
       "specialtyPersonalization": {
         "title": "Clinic Specialty Personalization",
-        "paragraph1": "X Dental Store may use the clinic specialty selected during signup or saved in your profile to personalize product recommendations and make clinic purchasing tools more relevant.",
+        "paragraph1": "Dentorax may use the clinic specialty selected during signup or saved in your profile to personalize product recommendations and make clinic purchasing tools more relevant.",
         "paragraph2": "This may affect areas such as Clinic Essentials, recommended products, reorder suggestions, category highlights, or other product discovery features. If your specialty changes, you may be able to update it through your account tools or contact support for help, depending on the features currently available."
       },
       "cookies": {
@@ -1959,9 +2022,9 @@
       },
       "informationSharing": {
         "title": "How We Share Information",
-        "paragraph1": "X Dental Store may share information with suppliers, distributors, couriers, logistics providers, payment providers, hosting, database, email, SMS, WhatsApp, support, analytics, performance, security, legal, accounting, or business service providers where needed to operate the website and fulfill customer requests.",
+        "paragraph1": "Dentorax may share information with suppliers, distributors, couriers, logistics providers, payment providers, hosting, database, email, SMS, WhatsApp, support, analytics, performance, security, legal, accounting, or business service providers where needed to operate the website and fulfill customer requests.",
         "paragraph2": "Information may also be shared with legal or regulatory authorities where required by law, or with professional advisors where needed for accounting, legal, tax, compliance, or business purposes.",
-        "paragraph3": "X Dental Store does not sell users' personal information to advertisers."
+        "paragraph3": "Dentorax does not sell users' personal information to advertisers."
       },
       "thirdPartyServices": {
         "title": "Third-Party Services",
@@ -1970,12 +2033,12 @@
       },
       "dataSecurity": {
         "title": "Data Security",
-        "paragraph1": "X Dental Store uses reasonable technical and organizational measures designed to protect information, including secure authentication practices, limited access controls, secure hosting and database practices, HTTPS where applicable, and password hashing.",
-        "paragraph2": "No online system, database, or transmission method is completely secure. While we work to protect information, X Dental Store cannot guarantee that unauthorized access, loss, misuse, or technical issues will never occur."
+        "paragraph1": "Dentorax uses reasonable technical and organizational measures designed to protect information, including secure authentication practices, limited access controls, secure hosting and database practices, HTTPS where applicable, and password hashing.",
+        "paragraph2": "No online system, database, or transmission method is completely secure. While we work to protect information, Dentorax cannot guarantee that unauthorized access, loss, misuse, or technical issues will never occur."
       },
       "dataRetention": {
         "title": "Data Retention",
-        "paragraph1": "X Dental Store keeps information only for as long as reasonably needed for account management, order history, customer support, legal, accounting, tax, fraud prevention, security, and business operations.",
+        "paragraph1": "Dentorax keeps information only for as long as reasonably needed for account management, order history, customer support, legal, accounting, tax, fraud prevention, security, and business operations.",
         "paragraph2": "Retention periods may vary depending on the type of information, the purpose for keeping it, legal requirements, operational needs, and whether an account, order, request, or support matter remains active."
       },
       "userRights": {
@@ -1986,29 +2049,29 @@
       "marketing": {
         "title": "Marketing Communications",
         "paragraph1": "Users may receive product updates, offers, promotional messages, and service announcements where they have consented or where such communications are allowed by applicable law.",
-        "paragraph2": "Users may unsubscribe from marketing messages or ask X Dental Store to stop promotional communication. Transactional messages related to orders, delivery, account activity, security, quotes, requests, and support may still be sent when necessary."
+        "paragraph2": "Users may unsubscribe from marketing messages or ask Dentorax to stop promotional communication. Transactional messages related to orders, delivery, account activity, security, quotes, requests, and support may still be sent when necessary."
       },
       "children": {
         "title": "Children's Privacy",
-        "paragraph1": "X Dental Store is intended for clinics, dental professionals, and adult users. The website is not intended for children, and children should not create accounts, place orders, or submit personal information through the website."
+        "paragraph1": "Dentorax is intended for clinics, dental professionals, and adult users. The website is not intended for children, and children should not create accounts, place orders, or submit personal information through the website."
       },
       "internationalTransfers": {
         "title": "International Data Transfers",
         "paragraph1": "Some hosting, database, payment, email, messaging, analytics, support, or other service providers may process or store information outside Egypt or outside the user's country.",
-        "paragraph2": "Where international processing is used, X Dental Store will use reasonable safeguards where applicable and will work with service providers that support appropriate data protection practices."
+        "paragraph2": "Where international processing is used, Dentorax will use reasonable safeguards where applicable and will work with service providers that support appropriate data protection practices."
       },
       "businessTransfers": {
         "title": "Business Transfers",
-        "paragraph1": "If X Dental Store is involved in a merger, acquisition, restructuring, financing, sale of assets, or similar business transaction, user information may be transferred or reviewed as part of that transaction, subject to appropriate confidentiality and legal protections where applicable."
+        "paragraph1": "If Dentorax is involved in a merger, acquisition, restructuring, financing, sale of assets, or similar business transaction, user information may be transferred or reviewed as part of that transaction, subject to appropriate confidentiality and legal protections where applicable."
       },
       "policyChanges": {
         "title": "Changes to This Privacy Policy",
-        "paragraph1": "X Dental Store may update this Privacy Policy from time to time. Updated versions will be posted on this page with a revised update date.",
+        "paragraph1": "Dentorax may update this Privacy Policy from time to time. Updated versions will be posted on this page with a revised update date.",
         "paragraph2": "Continued use of the website or services after an updated Privacy Policy is posted means you acknowledge the updated policy."
       },
       "contactInformation": {
         "title": "Contact Information",
-        "paragraph1": "For privacy questions or requests, contact X Dental Store through the website contact form, WhatsApp 01035777335, or Cairo, Egypt. The final registered business address and privacy mailbox will be published after legal review and production setup."
+        "paragraph1": "For privacy questions or requests, contact Dentorax through the website contact form, WhatsApp 01035777335, or Cairo, Egypt. The final registered business address and privacy mailbox will be published after legal review and production setup."
       }
     },
     "sidebar": {
@@ -2018,114 +2081,114 @@
     }
   },
   "termsPage": {
-    "seoTitle": "Terms of Service | X Dental Store",
-    "seoDescription": "Read the terms governing the use of X Dental Store, orders, payments, delivery, returns, accounts, and website services.",
+    "seoTitle": "Terms of Service | Dentorax",
+    "seoDescription": "Read the terms governing the use of Dentorax, orders, payments, delivery, returns, accounts, and website services.",
     "eyebrow": "Legal",
     "title": "Terms of Service",
-    "description": "Please read these terms carefully before using X Dental Store.",
+    "description": "Please read these terms carefully before using Dentorax.",
     "lastUpdatedLabel": "Last updated",
     "lastUpdatedDate": "July 2026",
     "sections": {
       "introductionAcceptance": {
         "title": "Introduction and Acceptance",
-        "paragraph1": "These Terms of Service explain the rules that apply when you access or use X Dental Store, including our website, product catalog, checkout, account tools, quote support, supply lists, product requests, notifications, and related services.",
-        "paragraph2": "By using X Dental Store, creating an account, placing an order, requesting a quote, or contacting us through the website, you agree to these Terms and to our Privacy Policy. If you do not agree, please do not use the website or services."
+        "paragraph1": "These Terms of Service explain the rules that apply when you access or use Dentorax, including our website, product catalog, checkout, account tools, quote support, supply lists, product requests, notifications, and related services.",
+        "paragraph2": "By using Dentorax, creating an account, placing an order, requesting a quote, or contacting us through the website, you agree to these Terms and to our Privacy Policy. If you do not agree, please do not use the website or services."
       },
       "services": {
-        "title": "About X Dental Store Services",
-        "paragraph1": "X Dental Store provides an ecommerce experience for dental products, clinic supplies, instruments, consumables, brands, categories, and purchasing tools designed for dental clinics and professionals.",
-        "paragraph2": "Products may be sold directly by X Dental Store or made available through partner suppliers, distributors, brands, couriers, or service providers. Where partners are involved, X Dental Store may help facilitate product discovery, ordering, payment, support, and delivery coordination."
+        "title": "About Dentorax Services",
+        "paragraph1": "Dentorax provides an ecommerce experience for dental products, clinic supplies, instruments, consumables, brands, categories, and purchasing tools designed for dental clinics and professionals.",
+        "paragraph2": "Products may be sold directly by Dentorax or made available through partner suppliers, distributors, brands, couriers, or service providers. Where partners are involved, Dentorax may help facilitate product discovery, ordering, payment, support, and delivery coordination."
       },
       "ordersAvailability": {
         "title": "Orders and Product Availability",
         "paragraph1": "Users may place orders, request quotes, or submit product requests through the website, subject to product availability and order acceptance.",
         "paragraph2": "Product prices, descriptions, images, discounts, stock levels, packaging, and availability may change without prior notice. Product images and descriptions are provided for guidance and may not always exactly match the final delivered product.",
-        "paragraph3": "X Dental Store may reject, cancel, correct, or adjust an order when necessary, including when a product is unavailable, pricing is incorrect, product information contains an error, payment cannot be confirmed, delivery details are incomplete, or an order appears to be fraudulent or improper."
+        "paragraph3": "Dentorax may reject, cancel, correct, or adjust an order when necessary, including when a product is unavailable, pricing is incorrect, product information contains an error, payment cannot be confirmed, delivery details are incomplete, or an order appears to be fraudulent or improper."
       },
       "pricingPayment": {
         "title": "Pricing and Payment",
         "paragraph1": "Prices are shown in the applicable currency displayed on the website. Taxes, delivery fees, handling charges, or other charges may apply depending on the order and location.",
-        "paragraph2": "Payment is currently made by Cash on Delivery: the X Dental Store team collects payment when your order is delivered. Any additional payment methods introduced later will be shown at checkout when available.",
-        "paragraph3": "Placing an order does not always mean final acceptance of that order. If a stock, pricing, supplier, delivery, or product information issue is discovered after the order is placed, X Dental Store may contact you to correct the issue, offer an alternative, adjust the order, or cancel it."
+        "paragraph2": "Payment is currently made by Cash on Delivery: the Dentorax team collects payment when your order is delivered. Any additional payment methods introduced later will be shown at checkout when available.",
+        "paragraph3": "Placing an order does not always mean final acceptance of that order. If a stock, pricing, supplier, delivery, or product information issue is discovered after the order is placed, Dentorax may contact you to correct the issue, offer an alternative, adjust the order, or cancel it."
       },
       "delivery": {
         "title": "Delivery",
         "paragraph1": "Delivery timing may vary based on product availability, clinic location, supplier processing, order confirmation, holidays, weather, traffic, or other operational factors.",
-        "paragraph2": "Orders are delivered by the X Dental Store team, which will contact you to confirm delivery details. Delivery estimates are provided for convenience and are not guaranteed unless expressly confirmed in writing.",
-        "paragraph3": "X Dental Store is not responsible for delays caused by events outside its reasonable control, including supplier delay, incorrect delivery details, customs or regulatory issues, force majeure events, or other external circumstances."
+        "paragraph2": "Orders are delivered by the Dentorax team, which will contact you to confirm delivery details. Delivery estimates are provided for convenience and are not guaranteed unless expressly confirmed in writing.",
+        "paragraph3": "Dentorax is not responsible for delays caused by events outside its reasonable control, including supplier delay, incorrect delivery details, customs or regulatory issues, force majeure events, or other external circumstances."
       },
       "returns": {
         "title": "Returns, Refunds, and Cancellations",
-        "paragraph1": "Customers should contact X Dental Store support for cancellation, return, exchange, or refund requests. Eligibility will depend on the product type, order status, item condition, supplier policy, applicable law, and any hygiene or safety restrictions.",
+        "paragraph1": "Customers should contact Dentorax support for cancellation, return, exchange, or refund requests. Eligibility will depend on the product type, order status, item condition, supplier policy, applicable law, and any hygiene or safety restrictions.",
         "paragraph2": "Some medical, dental, sterile, consumable, temperature-sensitive, special-order, or sealed products may not be eligible for return once opened, used, damaged, unsealed, installed, contaminated, expired, or handled in a way that affects safety or resale condition.",
-        "paragraph3": "Approved refunds, credits, exchanges, or cancellations may be processed through the original payment method or another method approved by X Dental Store, subject to any applicable processing timelines and deductions allowed by law."
+        "paragraph3": "Approved refunds, credits, exchanges, or cancellations may be processed through the original payment method or another method approved by Dentorax, subject to any applicable processing timelines and deductions allowed by law."
       },
       "accounts": {
         "title": "User Accounts",
         "paragraph1": "Some website features may require an account, including clinic purchasing tools, supply lists, saved details, quote tracking, order history, product requests, wishlist features, and account support.",
-        "paragraph2": "Users are responsible for keeping account login details secure and for all activity that occurs under their account. If you suspect unauthorized access, you should contact X Dental Store promptly.",
+        "paragraph2": "Users are responsible for keeping account login details secure and for all activity that occurs under their account. If you suspect unauthorized access, you should contact Dentorax promptly.",
         "paragraph3": "Users must provide accurate, current, and complete information, including contact details, delivery information, clinic details, and payment-related information where required."
       },
       "professionalUse": {
         "title": "Clinic and Professional Use",
-        "paragraph1": "X Dental Store serves dental clinics, dental professionals, and related purchasers. Users are responsible for confirming that any product they purchase is suitable for their intended clinical, laboratory, educational, or professional use.",
-        "paragraph2": "X Dental Store does not replace professional judgment, clinical training, manufacturer instructions, regulatory requirements, or dental/medical advice. Product selection, storage, handling, use, and disposal remain the responsibility of the user and the relevant clinic or professional.",
+        "paragraph1": "Dentorax serves dental clinics, dental professionals, and related purchasers. Users are responsible for confirming that any product they purchase is suitable for their intended clinical, laboratory, educational, or professional use.",
+        "paragraph2": "Dentorax does not replace professional judgment, clinical training, manufacturer instructions, regulatory requirements, or dental/medical advice. Product selection, storage, handling, use, and disposal remain the responsibility of the user and the relevant clinic or professional.",
         "paragraph3": "Users must comply with all applicable dental, medical, safety, storage, infection-control, licensing, and usage regulations that apply to their location and professional practice."
       },
       "websiteUse": {
         "title": "Website Use Rules",
         "paragraph1": "Users may not misuse the website or services. Prohibited activity includes hacking, scraping, automated harvesting, reverse engineering, interfering with website operation, bypassing security, copying design or code, submitting false information, abusing offers, or using the website for unlawful or harmful purposes.",
-        "paragraph2": "X Dental Store may suspend, restrict, or terminate access to the website or account features if we reasonably believe a user has misused the service, violated these Terms, harmed another user, created operational risk, or acted unlawfully."
+        "paragraph2": "Dentorax may suspend, restrict, or terminate access to the website or account features if we reasonably believe a user has misused the service, violated these Terms, harmed another user, created operational risk, or acted unlawfully."
       },
       "userContent": {
         "title": "User Content and Feedback",
         "paragraph1": "Users may submit reviews, messages, support requests, product requests, images, comments, feedback, or other content through the website or related communication channels. Users remain responsible for the accuracy, legality, and appropriateness of what they submit.",
-        "paragraph2": "By submitting feedback or suggestions, you allow X Dental Store to use that feedback to improve products, services, website features, support workflows, and customer experience without owing compensation unless separately agreed in writing.",
-        "paragraph3": "X Dental Store may remove, limit, or refuse content that is inaccurate, unlawful, abusive, misleading, confidential, infringing, promotional, or otherwise inappropriate."
+        "paragraph2": "By submitting feedback or suggestions, you allow Dentorax to use that feedback to improve products, services, website features, support workflows, and customer experience without owing compensation unless separately agreed in writing.",
+        "paragraph3": "Dentorax may remove, limit, or refuse content that is inaccurate, unlawful, abusive, misleading, confidential, infringing, promotional, or otherwise inappropriate."
       },
       "communications": {
         "title": "Communications",
-        "paragraph1": "By creating an account, placing an order, requesting a quote, submitting a support request, or otherwise using X Dental Store, you may receive communications related to orders, delivery, account activity, support, quotes, product requests, offers, reminders, or service updates.",
+        "paragraph1": "By creating an account, placing an order, requesting a quote, submitting a support request, or otherwise using Dentorax, you may receive communications related to orders, delivery, account activity, support, quotes, product requests, offers, reminders, or service updates.",
         "paragraph2": "Communications may be sent by email, phone call, SMS, WhatsApp, push notification, in-account message, or other available channels. Message and data charges may apply depending on your provider and plan."
       },
       "offers": {
         "title": "Offers, Discounts, and Coupons",
         "paragraph1": "Offers, discounts, coupons, free delivery promotions, bundles, loyalty rewards, and other promotional benefits may be limited by time, stock, product, category, user, clinic, location, payment method, or other conditions.",
-        "paragraph2": "X Dental Store may modify, cancel, expire, limit, or refuse promotions where necessary, including in cases of error, misuse, suspected fraud, stock issues, or operational changes.",
-        "paragraph3": "Coupons and promotional credits have no cash value unless expressly stated and may not be transferable, refundable, or combined with other offers except where X Dental Store allows it."
+        "paragraph2": "Dentorax may modify, cancel, expire, limit, or refuse promotions where necessary, including in cases of error, misuse, suspected fraud, stock issues, or operational changes.",
+        "paragraph3": "Coupons and promotional credits have no cash value unless expressly stated and may not be transferable, refundable, or combined with other offers except where Dentorax allows it."
       },
       "thirdParty": {
         "title": "Third-Party Products, Suppliers, and Links",
         "paragraph1": "Some products, brands, suppliers, manufacturers, payment providers, delivery providers, tools, or external links may be provided by third parties. Their own terms, warranties, policies, instructions, and privacy practices may apply.",
-        "paragraph2": "X Dental Store is not responsible for third-party terms, policies, product claims, service interruptions, delivery performance, manufacturer changes, or external websites except to the extent required by applicable law or expressly agreed by X Dental Store."
+        "paragraph2": "Dentorax is not responsible for third-party terms, policies, product claims, service interruptions, delivery performance, manufacturer changes, or external websites except to the extent required by applicable law or expressly agreed by Dentorax."
       },
       "intellectualProperty": {
         "title": "Intellectual Property",
-        "paragraph1": "The X Dental Store name, website design, layout, interface, logo, text, images, icons, graphics, product presentation, software, workflows, and other website materials are owned by X Dental Store or used under license.",
-        "paragraph2": "Users may not copy, reproduce, modify, distribute, sell, mirror, scrape, reuse, or create derivative works from website content, design, software, or branding without prior written permission from X Dental Store or the relevant rights holder."
+        "paragraph1": "The Dentorax name, website design, layout, interface, logo, text, images, icons, graphics, product presentation, software, workflows, and other website materials are owned by Dentorax or used under license.",
+        "paragraph2": "Users may not copy, reproduce, modify, distribute, sell, mirror, scrape, reuse, or create derivative works from website content, design, software, or branding without prior written permission from Dentorax or the relevant rights holder."
       },
       "availabilityDisclaimer": {
         "title": "Service Availability and Disclaimer",
-        "paragraph1": "X Dental Store provides the website and services on an available basis. We aim to keep product information, pricing, stock, account tools, and website functionality accurate and reliable, but we do not guarantee that the service will always be uninterrupted, error-free, fully current, or free from technical issues.",
+        "paragraph1": "Dentorax provides the website and services on an available basis. We aim to keep product information, pricing, stock, account tools, and website functionality accurate and reliable, but we do not guarantee that the service will always be uninterrupted, error-free, fully current, or free from technical issues.",
         "paragraph2": "Product information, images, availability, and descriptions are provided for guidance and may vary due to supplier updates, manufacturer changes, packaging differences, stock substitution, or display limitations."
       },
       "liability": {
         "title": "Limitation of Liability",
-        "paragraph1": "To the maximum extent permitted by applicable law, X Dental Store is not responsible for indirect, incidental, special, punitive, or consequential damages, including loss of profit, business interruption, data loss, clinic downtime, reputational harm, or loss resulting from use of or inability to use the website or services.",
-        "paragraph2": "Where liability cannot be excluded, X Dental Store's liability will be limited to the maximum extent allowed by applicable law and the specific circumstances of the relevant order or service."
+        "paragraph1": "To the maximum extent permitted by applicable law, Dentorax is not responsible for indirect, incidental, special, punitive, or consequential damages, including loss of profit, business interruption, data loss, clinic downtime, reputational harm, or loss resulting from use of or inability to use the website or services.",
+        "paragraph2": "Where liability cannot be excluded, Dentorax's liability will be limited to the maximum extent allowed by applicable law and the specific circumstances of the relevant order or service."
       },
       "indemnification": {
         "title": "Indemnification",
-        "paragraph1": "Users agree to protect and hold X Dental Store, its team, affiliates, service providers, and partners harmless from claims, losses, liabilities, damages, costs, or expenses arising from misuse of the website, breach of these Terms, unlawful activity, violation of third-party rights, inaccurate information, or improper product use by the user."
+        "paragraph1": "Users agree to protect and hold Dentorax, its team, affiliates, service providers, and partners harmless from claims, losses, liabilities, damages, costs, or expenses arising from misuse of the website, breach of these Terms, unlawful activity, violation of third-party rights, inaccurate information, or improper product use by the user."
       },
       "termination": {
         "title": "Termination",
-        "paragraph1": "Users may stop using X Dental Store at any time. X Dental Store may suspend, restrict, or terminate access to the website, account features, offers, or services if a user violates these Terms, creates risk, misuses the service, or acts in a way that may harm X Dental Store, suppliers, customers, or service providers.",
+        "paragraph1": "Users may stop using Dentorax at any time. Dentorax may suspend, restrict, or terminate access to the website, account features, offers, or services if a user violates these Terms, creates risk, misuses the service, or acts in a way that may harm Dentorax, suppliers, customers, or service providers.",
         "paragraph2": "Termination does not affect obligations that should reasonably continue after access ends, including payment obligations, intellectual property restrictions, liability limits, and dispute-related provisions."
       },
       "termsChanges": {
         "title": "Changes to These Terms",
-        "paragraph1": "X Dental Store may update these Terms from time to time. Updated Terms will be posted on this page with a revised update date. Continued use of the website or services after changes are posted means you accept the updated Terms."
+        "paragraph1": "Dentorax may update these Terms from time to time. Updated Terms will be posted on this page with a revised update date. Continued use of the website or services after changes are posted means you accept the updated Terms."
       },
       "governingLaw": {
         "title": "Governing Law",
@@ -2133,7 +2196,7 @@
       },
       "contactInformation": {
         "title": "Contact Information",
-        "paragraph1": "For questions about these Terms, contact X Dental Store through the website contact form, WhatsApp 01035777335, or Cairo, Egypt. The final registered business address and support mailbox will be published after legal review and production setup."
+        "paragraph1": "For questions about these Terms, contact Dentorax through the website contact form, WhatsApp 01035777335, or Cairo, Egypt. The final registered business address and support mailbox will be published after legal review and production setup."
       }
     },
     "sidebar": {
@@ -2143,8 +2206,8 @@
     }
   },
   "howToOrderPage": {
-    "seoTitle": "How to Order | X Dental Store",
-    "seoDescription": "Learn how to browse products, request quotes, choose payment methods, and track your order at X Dental Store.",
+    "seoTitle": "How to Order | Dentorax",
+    "seoDescription": "Learn how to browse products, request quotes, choose payment methods, and track your order at Dentorax.",
     "eyebrow": "ORDER GUIDE",
     "title": "How to Order",
     "description": "Follow a simple process to browse products, request quotes, and receive your clinic supplies.",
@@ -2186,15 +2249,15 @@
       },
       "payment": {
         "title": "Choose Payment Method",
-        "description": "Cash on Delivery is the active launch payment method. Pay the X Dental Store team when your order is delivered."
+        "description": "Cash on Delivery is the active launch payment method. Pay the Dentorax team when your order is delivered."
       },
       "deliveryDetails": {
         "title": "Confirm Delivery Details",
-        "description": "Add your delivery address, phone number, and any important delivery notes. Please make sure your contact details are correct so the X Dental Store delivery team can reach you."
+        "description": "Add your delivery address, phone number, and any important delivery notes. Please make sure your contact details are correct so the Dentorax delivery team can reach you."
       },
       "confirmation": {
         "title": "Order Confirmation",
-        "description": "After placing your order, X Dental Store may confirm product availability, pricing, Cash on Delivery, and delivery details before dispatch."
+        "description": "After placing your order, Dentorax may confirm product availability, pricing, Cash on Delivery, and delivery details before dispatch."
       },
       "tracking": {
         "title": "Receive and Track Your Order",
@@ -2208,11 +2271,11 @@
     }
   },
   "shippingDeliveryPage": {
-    "seoTitle": "Shipping & Delivery | X Dental Store",
-    "seoDescription": "Learn about X Dental Store delivery coverage, standard shipping, fast delivery products, COD, special product handling, and delivery support.",
+    "seoTitle": "Shipping & Delivery | Dentorax",
+    "seoDescription": "Learn about Dentorax delivery coverage, standard shipping, fast delivery products, COD, special product handling, and delivery support.",
     "eyebrow": "Delivery",
     "title": "Shipping & Delivery",
-    "description": "Learn how X Dental Store delivers dental supplies, fast delivery products, and special clinic orders.",
+    "description": "Learn how Dentorax delivers dental supplies, fast delivery products, and special clinic orders.",
     "lastUpdatedLabel": "Last updated",
     "lastUpdatedDate": "July 2026",
     "contactSupport": "Contact Support",
@@ -2235,7 +2298,7 @@
       },
       "prepareDispatch": {
         "title": "Prepare and dispatch",
-        "description": "Eligible products are packed and handed to the X Dental Store delivery team according to product handling needs."
+        "description": "Eligible products are packed and handed to the Dentorax delivery team according to product handling needs."
       },
       "receiveDelivery": {
         "title": "Receive your delivery",
@@ -2245,7 +2308,7 @@
     "sections": {
       "coverage": {
         "title": "Delivery Coverage",
-        "paragraph1": "X Dental Store provides delivery across supported locations in Egypt through its internal delivery team. Availability, cost, and timing may vary depending on your city, governorate, product type, order size, and stock availability.",
+        "paragraph1": "Dentorax provides delivery across supported locations in Egypt through its internal delivery team. Availability, cost, and timing may vary depending on your city, governorate, product type, order size, and stock availability.",
         "paragraph2": "Some products may require delivery confirmation before shipment, especially when the order includes special handling, high-value items, or products with limited stock."
       },
       "confirmation": {
@@ -2255,7 +2318,7 @@
       },
       "standard": {
         "title": "Standard Delivery",
-        "paragraph1": "Standard delivery usually takes 2-5 business days depending on location, X Dental Store delivery coverage, product availability, and order confirmation time.",
+        "paragraph1": "Standard delivery usually takes 2-5 business days depending on location, Dentorax delivery coverage, product availability, and order confirmation time.",
         "paragraph2": "Delivery to remote areas or during busy periods may take longer."
       },
       "fastDelivery": {
@@ -2276,17 +2339,17 @@
       "cashOnDelivery": {
         "title": "Cash on Delivery",
         "paragraph1": "Cash on Delivery may be available for selected orders and locations.",
-        "paragraph2": "X Dental Store may limit COD for high-value products, special orders, large equipment, or products requiring special handling. Prepayment or additional confirmation may be requested for certain orders."
+        "paragraph2": "Dentorax may limit COD for high-value products, special orders, large equipment, or products requiring special handling. Prepayment or additional confirmation may be requested for certain orders."
       },
       "specialProducts": {
         "title": "Special Products and Shipping Quote",
-        "paragraph1": "Some dental products require special handling and cannot always be delivered through the standard X Dental Store delivery process.",
+        "paragraph1": "Some dental products require special handling and cannot always be delivered through the standard Dentorax delivery process.",
         "paragraph2": "Large machines, heavy equipment, fragile instruments, liquids, gels, disinfectants, chemicals, adhesives, high-value instruments, and restricted dental materials may require a shipping quote before dispatch.",
         "cta": "Request shipping confirmation from support."
       },
       "failedDelivery": {
         "title": "Failed Delivery and Rescheduling",
-        "paragraph1": "If the X Dental Store delivery team cannot reach you, or if the address details are incorrect, delivery may be delayed, rescheduled, or returned.",
+        "paragraph1": "If the Dentorax delivery team cannot reach you, or if the address details are incorrect, delivery may be delayed, rescheduled, or returned.",
         "paragraph2": "Additional delivery fees may apply for repeated delivery attempts or returned orders after the team confirms the details with you."
       },
       "orderIssues": {
@@ -2300,7 +2363,7 @@
       },
       "updates": {
         "title": "Policy Updates",
-        "paragraph1": "X Dental Store may update this Shipping & Delivery Policy from time to time as delivery coverage, fees, and operational rules change."
+        "paragraph1": "Dentorax may update this Shipping & Delivery Policy from time to time as delivery coverage, fees, and operational rules change."
       }
     },
     "sidebar": {
@@ -2309,8 +2372,8 @@
     }
   },
   "returnsPolicyPage": {
-    "seoTitle": "Returns Policy | X Dental Store",
-    "seoDescription": "Learn how X Dental Store handles return requests, exchanges, damaged items, refunds, and special product return rules.",
+    "seoTitle": "Returns Policy | Dentorax",
+    "seoDescription": "Learn how Dentorax handles return requests, exchanges, damaged items, refunds, and special product return rules.",
     "eyebrow": "Support",
     "title": "Returns Policy",
     "description": "Learn how returns, exchanges, damaged items, and refund requests are handled.",
@@ -2332,11 +2395,11 @@
     "sections": {
       "requests": {
         "title": "Return Requests",
-        "paragraph1": "To request a return or exchange, please contact X Dental Store support with your order number, product details, and the reason for the request. Our team will review the request and confirm the next steps."
+        "paragraph1": "To request a return or exchange, please contact Dentorax support with your order number, product details, and the reason for the request. Our team will review the request and confirm the next steps."
       },
       "period": {
         "title": "Return Period",
-        "paragraph1": "Return requests must be submitted within the approved return period confirmed by X Dental Store. The final return window may vary depending on product type, supplier policy, and applicable rules."
+        "paragraph1": "Return requests must be submitted within the approved return period confirmed by Dentorax. The final return window may vary depending on product type, supplier policy, and applicable rules."
       },
       "conditions": {
         "title": "Return Conditions",
@@ -2362,7 +2425,7 @@
       "refunds": {
         "title": "Refunds",
         "paragraph1": "Refund approval, method, and timing depend on the product condition, supplier review, and the details of the order.",
-        "paragraph2": "Approved refunds are handled directly by the X Dental Store team. The team will contact you to confirm the available refund arrangement."
+        "paragraph2": "Approved refunds are handled directly by the Dentorax team. The team will contact you to confirm the available refund arrangement."
       },
       "exchanges": {
         "title": "Exchanges",
@@ -2371,7 +2434,7 @@
       "shippingFees": {
         "title": "Return Shipping Fees",
         "paragraph1": "Return shipping fees may depend on the reason for the return.",
-        "paragraph2": "If the return is due to a wrong, missing, or damaged item caused by X Dental Store, supplier, or delivery handling, the case will be reviewed by support. If the return is due to customer preference or incorrect customer information, return delivery fees may apply."
+        "paragraph2": "If the return is due to a wrong, missing, or damaged item caused by Dentorax, supplier, or delivery handling, the case will be reviewed by support. If the return is due to customer preference or incorrect customer information, return delivery fees may apply."
       },
       "specialOrders": {
         "title": "Special Orders and Machines",
@@ -2380,7 +2443,7 @@
       },
       "updates": {
         "title": "Policy Updates",
-        "paragraph1": "X Dental Store may update this Returns Policy from time to time as supplier rules, delivery policies, product categories, and business operations change."
+        "paragraph1": "Dentorax may update this Returns Policy from time to time as supplier rules, delivery policies, product categories, and business operations change."
       }
     },
     "sidebar": {
@@ -2390,11 +2453,11 @@
     }
   },
   "trackOrderPage": {
-    "seoTitle": "Track Your Order | X Dental Store",
-    "seoDescription": "Track your X Dental Store order through your account or contact support with your order number for delivery updates.",
+    "seoTitle": "Track Your Order | Dentorax",
+    "seoDescription": "Track your Dentorax order through your account or contact support with your order number for delivery updates.",
     "eyebrow": "Order Tracking",
     "title": "Track Your Order",
-    "description": "Enter your order number and customer phone number to view the latest X Dental Store order status.",
+    "description": "Enter your order number and customer phone number to view the latest Dentorax order status.",
     "viewOrders": "View My Orders",
     "contactSupport": "Contact Support",
     "form": {
@@ -2423,7 +2486,7 @@
       "orderDate": "Order date",
       "currentStatus": "Current status",
       "lastUpdate": "Last order update",
-      "deliveryNote": "Delivery updates are currently managed by X Dental Store."
+      "deliveryNote": "Delivery updates are currently managed by Dentorax."
     },
     "steps": {
       "signIn": {
@@ -2442,7 +2505,7 @@
     "sections": {
       "account": {
         "title": "Track from Your Account",
-        "paragraph1": "Sign in to your X Dental Store account to view your order history, current order status, order details, payment information, and delivery updates when available.",
+        "paragraph1": "Sign in to your Dentorax account to view your order history, current order status, order details, payment information, and delivery updates when available.",
         "cta": "View My Orders"
       },
       "help": {
@@ -2452,7 +2515,7 @@
       },
       "information": {
         "title": "Order Information to Prepare",
-        "paragraph1": "To help us check your order faster, please prepare your order number, contact details, and any confirmation message you received from X Dental Store.",
+        "paragraph1": "To help us check your order faster, please prepare your order number, contact details, and any confirmation message you received from Dentorax.",
         "bullet1": "Order number",
         "bullet2": "Full name",
         "bullet3": "Phone number",
@@ -2645,7 +2708,7 @@
   },
   "floatingSupport": {
     "title": "Customer Support",
-    "subtitle": "Message the X Dental support team",
+    "subtitle": "Message the Dentorax support team",
     "openChat": "Open customer support chat",
     "recentThreads": "Recent support conversations",
     "selectConversation": "Select conversation",
@@ -2662,7 +2725,7 @@
     "messageRequired": "Please write a message first.",
     "loadFailed": "Could not load support conversations. Please try again.",
     "sendFailed": "Could not send your message. Please try again.",
-    "autoAcknowledgement": "Thanks for contacting X Dental Store. Our support team received your message and will reply as soon as possible."
+    "autoAcknowledgement": "Thanks for contacting Dentorax. Our support team received your message and will reply as soon as possible."
   },
   "cart": {
     "emptyTitle": "Your cart is empty",
@@ -2758,7 +2821,7 @@
   },
   "welcomeRewards": {
     "headline": "Get EGP {value} toward your first order",
-    "description": "Create your X Dental Store account and receive {points} welcome points (EGP {value}) to use on your first eligible purchase. Keep earning more points with every completed order.",
+    "description": "Create your Dentorax account and receive {points} welcome points (EGP {value}) to use on your first eligible purchase. Keep earning more points with every completed order.",
     "cta": "Create Account & Claim {points} Points",
     "note": "Valid for {days} days on eligible product purchases of EGP {minimum} or more. Points cannot be used for shipping."
   },
@@ -2809,8 +2872,8 @@
     "freeShipping": "Free Shipping",
     "pts": "pts",
     "paymentMethod": "Payment Method",
-    "cashNote": "Pay in cash when your order is delivered by the X Dental Store team.",
-    "internalDeliveryNote": "Delivery will be handled by the X Dental Store team. Our team will contact you to confirm delivery details.",
+    "cashNote": "Pay in cash when your order is delivered by the Dentorax team.",
+    "internalDeliveryNote": "Delivery will be handled by the Dentorax team. Our team will contact you to confirm delivery details.",
     "cardNumber": "Card number",
     "cardExpiry": "MM / YY",
     "cardName": "Name on card",
@@ -2819,7 +2882,7 @@
     "walletNote": "Complete payment using your supported mobile wallet.",
     "instapayNote": "Transfer the order total using Instapay.",
     "bankNote": "Bank transfer instructions will be provided after placing your order.",
-    "accountName": "Account Name: X Dental Supplies",
+    "accountName": "Account Name: Dentorax Supplies",
     "iban": "IBAN: EG00 0000 0000 0000 0000 0000",
     "billingAddress": "Billing Address",
     "billingSame": "Billing address is the same as shipping address",
@@ -2887,9 +2950,26 @@
       "title": "Rewards & Wallet",
       "pointsLabel": "Redeem reward points",
       "pointsAvailable": "{points} available - maximum {maximum}",
+      "earnedPointsLabel": "Redeem earned points",
+      "earnedPointsUnavailable": "No earned points are usable for this checkout yet.",
+      "welcomeTitle": "{points} Welcome Points",
+      "welcomeWorth": "Worth {amount}",
+      "useWelcome": "Use {points} Points",
+      "removeWelcome": "Remove reward",
+      "unlockWelcome": "Unlock at EGP 5,000",
+      "welcomeReady": "Your welcome reward is ready.",
+      "welcomeLockedRemaining": "Add {amount} more to unlock your welcome reward.",
+      "saveAmount": "Save {amount}",
+      "rewardApplied": "Reward applied",
+      "amountSaved": "{amount} saved",
+      "welcomeApplied": "{points} points applied · Save {amount}.",
+      "welcomeUnlocked": "Your complete {amount} welcome reward is ready to use.",
+      "welcomeLocked": "Available when your eligible order reaches EGP {minimum}.",
+      "welcomeAddMore": "Add more products to reach EGP {minimum} and unlock your {amount} welcome reward.",
+      "welcomeReward": "Welcome Reward",
       "pointsRule": "100 points = EGP 10. Points apply to products only and cannot pay shipping.",
       "pointsMinimumRule": "Points can be redeemed on orders of EGP {minimum} or more.",
-      "welcomeMinimumRule": "Welcome points require at least EGP {minimum} of eligible products and expire after {days} days.",
+      "welcomeMinimumRule": "Promotional welcome points require at least EGP {minimum} of eligible products and expire when this weekend's campaign closes.",
       "walletLabel": "Use store credit",
       "walletAvailable": "Available: {amount}",
       "walletRule": "Store credit can cover products and shipping. Any remainder stays Cash on Delivery.",
@@ -2950,7 +3030,7 @@
     "fallbackItems": {
       "kfile": "Videya K-File",
       "retractor": "Cheek Retractor",
-      "xDental": "X Dental",
+      "xDental": "Dentorax",
       "instruments": "Instruments",
       "lengthOption": "Length: 25mm",
       "sizeOption": "Size: K15",
@@ -2982,7 +3062,7 @@
       "sideCaption": "Supplies made simple",
       "eyebrow": "Professional account",
       "title": "Welcome back",
-      "intro": "Sign in securely to access your X Dental Store account.",
+      "intro": "Sign in securely to access your Dentorax account.",
       "email": "Email address",
       "emailPlaceholder": "name@example.com",
       "password": "Password",
@@ -2990,7 +3070,7 @@
       "hidePassword": "Hide password",
       "showPassword": "Show password",
       "forgot": "Forgot password?",
-      "forgotHelpTitle": "For password reset, please contact X Dental support.",
+      "forgotHelpTitle": "For password reset, please contact Dentorax support.",
       "forgotWhatsApp": "WhatsApp",
       "forgotPhone": "Phone",
       "signingIn": "Signing in...",
@@ -3022,6 +3102,10 @@
       "confirmPassword": "Confirm password",
       "hideConfirmPassword": "Hide confirmation password",
       "showConfirmPassword": "Show confirmation password",
+      "promoCode": "Promo code (optional)",
+      "promoCodePlaceholder": "Enter a promo code, if you have one",
+      "promoCodeAppliedToast": "{points} promotional points added to your account.",
+      "promoCodeInvalidToast": "Account created. That promo code wasn't valid, so no promotional points were added.",
       "creating": "Creating account...",
       "createAccount": "Create Account",
       "hasAccount": "Already have an account?",
@@ -3048,72 +3132,72 @@
     "body": "Did you forget to add the page to the router?"
   },
   "seo": {
-    "siteName": "X Dental Store",
-    "defaultTitle": "X Dental Store - Premium Dental Supplies for Clinics & Professionals",
+    "siteName": "Dentorax",
+    "defaultTitle": "Dentorax - Premium Dental Supplies for Clinics & Professionals",
     "defaultDescription": "Shop premium dental instruments, clinic essentials, and trusted brands. Competitive pricing, fast delivery, and support for dental clinics across Egypt.",
     "pages": {
       "home": {
-        "title": "X Dental Store - Premium Dental Supplies for Clinics & Professionals",
+        "title": "Dentorax - Premium Dental Supplies for Clinics & Professionals",
         "description": "Shop premium dental instruments, clinic essentials, and trusted brands with competitive pricing and reliable delivery for dental clinics."
       },
       "products": {
-        "title": "Dental Products & Supplies | X Dental Store",
+        "title": "Dental Products & Supplies | Dentorax",
         "description": "Browse premium dental supplies, instruments, consumables, and trusted brands for clinics and dental professionals."
       },
       "productDetail": {
-        "title": "{name} | X Dental Store",
+        "title": "{name} | Dentorax",
         "description": "Shop {name} from {brand}. Explore trusted dental supplies with clear pricing and clinic-focused support."
       },
       "categories": {
-        "title": "Dental Supply Categories | X Dental Store",
+        "title": "Dental Supply Categories | Dentorax",
         "description": "Browse dental supplies by specialty, treatment type, and everyday clinic needs."
       },
       "brands": {
-        "title": "Trusted Dental Brands | X Dental Store",
+        "title": "Trusted Dental Brands | Dentorax",
         "description": "Discover dental brands and suppliers trusted by clinics and dental professionals."
       },
       "about": {
-        "title": "About X Dental Store",
-        "description": "Learn how X Dental Store helps clinics discover products, manage repeat purchasing, request quotes, and order dental supplies."
+        "title": "About Dentorax",
+        "description": "Learn how Dentorax helps clinics discover products, manage repeat purchasing, request quotes, and order dental supplies."
       },
       "contact": {
-        "title": "Contact X Dental Store",
-        "description": "Contact X Dental Store for product questions, order support, quotes, and clinic supply requests."
+        "title": "Contact Dentorax",
+        "description": "Contact Dentorax for product questions, order support, quotes, and clinic supply requests."
       },
       "faqs": {
-        "title": "Frequently Asked Questions | X Dental Store",
-        "description": "Find answers about quotes, supply lists, product requests, account tools, and support at X Dental Store."
+        "title": "Frequently Asked Questions | Dentorax",
+        "description": "Find answers about quotes, supply lists, product requests, account tools, and support at Dentorax."
       },
       "howToOrder": {
-        "title": "How to Order | X Dental Store",
-        "description": "Learn how to browse products, request quotes, choose payment methods, and track your order at X Dental Store."
+        "title": "How to Order | Dentorax",
+        "description": "Learn how to browse products, request quotes, choose payment methods, and track your order at Dentorax."
       },
       "cart": {
-        "title": "Shopping Cart | X Dental Store",
+        "title": "Shopping Cart | Dentorax",
         "description": "Review selected dental supplies and proceed to checkout."
       },
       "checkout": {
-        "title": "Checkout | X Dental Store",
+        "title": "Checkout | Dentorax",
         "description": "Complete your dental supply order securely."
       },
       "login": {
-        "title": "Sign In | X Dental Store",
-        "description": "Sign in to manage your X Dental Store account."
+        "title": "Sign In | Dentorax",
+        "description": "Sign in to manage your Dentorax account."
       },
       "signup": {
-        "title": "Create Account | X Dental Store",
-        "description": "Create an X Dental Store account for clinic purchasing tools."
+        "title": "Create Account | Dentorax",
+        "description": "Create an Dentorax account for clinic purchasing tools."
       },
       "account": {
-        "title": "My Account | X Dental Store",
+        "title": "My Account | Dentorax",
         "description": "Manage orders, quotes, supply lists, addresses, and clinic account settings."
       },
       "orderConfirmed": {
-        "title": "Order Confirmed | X Dental Store",
-        "description": "Your X Dental Store order has been confirmed."
+        "title": "Order Confirmed | Dentorax",
+        "description": "Your Dentorax order has been confirmed."
       },
       "notFound": {
-        "title": "Page Not Found | X Dental Store",
+        "title": "Page Not Found | Dentorax",
         "description": "The page you requested could not be found."
       }
     }
@@ -3619,7 +3703,7 @@
       "changePreferencesAnytime": "You can change these preferences at any time.",
       "clinicSupplyDeals": "Clinic supply deals",
       "communicationPreferences": "Communication Preferences",
-      "communicationPreferencesDescription": "Control marketing and service messages from X Dental Store.",
+      "communicationPreferencesDescription": "Control marketing and service messages from Dentorax.",
       "confirmNewPassword": "Confirm New Password",
       "country": "Country",
       "currency": "Currency",
@@ -3699,7 +3783,7 @@
       "reviewerResponse": "Reviewer response",
       "approvedDeactivationExplanation": "Your request has been approved and is awaiting completion by an administrator. Your account remains active until completion.",
       "approvedDeletionExplanation": "Your deletion request has been approved and is awaiting final completion. Your account remains accessible until the administrator completes the deletion and anonymization process.",
-      "completedDeactivationExplanation": "Your account has been deactivated. To restore access, contact X Dental Store support. An administrator must review and reactivate the account. You will need to sign in again after reactivation.",
+      "completedDeactivationExplanation": "Your account has been deactivated. To restore access, contact Dentorax support. An administrator must review and reactivate the account. You will need to sign in again after reactivation.",
       "accountAccessHelp": "Account Access Help",
       "accountRequestTypes": {
         "deactivation": "Deactivation",
@@ -4154,7 +4238,7 @@
       "filterPointsByDate": "Filter points by date",
       "filterPointsByStatus": "Filter points by status",
       "howItWorks": "How It Works",
-      "howToEarnDescription": "Earn rewards as you shop, reorder clinic essentials, and use X Dental Store features.",
+      "howToEarnDescription": "Earn rewards as you shop, reorder clinic essentials, and use Dentorax features.",
       "howToEarnPoints": "How to earn points",
       "pendingPoints": "Pending Points",
       "pointsCheckoutNote": "Points can be applied during checkout when your cart is eligible.",
@@ -4191,8 +4275,9 @@
       "standardEarnRule": "Standard customers earn 1 point for each complete EGP 10 block of eligible delivered-order spending.",
       "vipEarnRule": "VIP customers earn 2 points for each complete EGP 10 block of eligible delivered-order spending.",
       "redemptionRuleBody": "Redeem in 100-point increments, where 100 points gives EGP 10 of eligible product value, up to 20% of the product subtotal. Points expire 12 months after activation.",
-      "welcomeRuleBody": "{points} welcome points are available immediately and expire after {days} days. Points can be redeemed on orders of EGP {minimum} or more, including your first order.",
-      "notCashNotice": "Points and store credit cannot be withdrawn or transferred. Wallet credit is used only for X Dental Store orders.",
+      "welcomeRuleBody": "Enter a valid promo code at signup to receive {points} promotional points. Points are only awarded during the active Friday/Saturday campaign window and expire when it closes. They can be redeemed on orders of EGP {minimum} or more.",
+      "notCashNotice": "Points and store credit cannot be withdrawn or transferred. Wallet credit is used only for Dentorax orders.",
+      "promoMinimumRule": "Promotional points from a signup promo code can only be redeemed on orders of EGP 5,000 or more. This minimum does not apply to points earned from regular shopping.",
       "activity": {
         "welcomePending": "Welcome points pending",
         "welcomeActivated": "Welcome points activated",

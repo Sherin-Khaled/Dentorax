@@ -12,19 +12,16 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   ClipboardList,
-  Headphones,
-  Mail,
   MapPin,
-  MessageCircle,
-  Phone,
-  Repeat,
   SearchCheck,
+  Truck,
 } from "lucide-react";
 import { DirectionalIcon } from "@/components/DirectionalIcon";
 import { Container } from "@/components/dental/Container";
 import { Button } from "@/components/dental/Button";
 import { SectionReveal } from "@/components/dental/SectionReveal";
 import { PremiumAccentIcon } from "@/components/dental/PremiumAccentIcon";
+import { ContactMethods } from "@/components/dental/ContactMethods";
 import { TimelineMedia } from "@/components/dental/TimelineMedia";
 import type { CarouselApi } from "@/components/ui/carousel";
 import {
@@ -70,8 +67,9 @@ const WHY_CHOOSE_CAROUSEL = [...WHY_CHOOSE, ...WHY_CHOOSE];
 
 const BUYING_STEPS = [
   {
-    id: "wishlist",
-    Icon: ClipboardList,
+    id: "clinicBranches",
+    Icon: MapPin,
+    href: "/account/clinic-branches",
     media: {
       type: "image" as const,
       src: PRODUCT_VISUAL,
@@ -79,8 +77,9 @@ const BUYING_STEPS = [
     },
   },
   {
-    id: "supplyLists",
-    Icon: SearchCheck,
+    id: "freeDelivery",
+    Icon: Truck,
+    href: "/shipping-delivery",
     media: {
       type: "image" as const,
       src: CLINIC_SUPPORT_VISUAL,
@@ -89,7 +88,8 @@ const BUYING_STEPS = [
   },
   {
     id: "quotes",
-    Icon: Repeat,
+    Icon: ClipboardList,
+    href: "/account/quotes",
     media: {
       type: "image" as const,
       src: PRODUCT_VISUAL,
@@ -97,21 +97,15 @@ const BUYING_STEPS = [
     },
   },
   {
-    id: "productSupport",
-    Icon: Headphones,
+    id: "productRequest",
+    Icon: SearchCheck,
+    href: "/account/product-requests",
     media: {
       type: "image" as const,
       src: CLINIC_SUPPORT_VISUAL,
       mediaClassName: "object-cover",
     },
   },
-];
-
-const CONTACT_ACTIONS = [
-  { Icon: Phone, id: "call" },
-  { Icon: Mail, id: "email" },
-  { Icon: MessageCircle, id: "whatsapp" },
-  { Icon: MapPin, id: "visit" },
 ];
 
 export default function About() {
@@ -794,6 +788,7 @@ function BuyingWorkflowSection() {
               ({
                 id,
                 Icon,
+                href,
                 media,
               }) => (
                 <article
@@ -817,6 +812,13 @@ function BuyingWorkflowSection() {
                   <p className="mt-3 text-[14px] leading-[24px] text-[var(--xd-text-muted)]">
                     {t(`aboutPage.workflow.steps.${id}.description`)}
                   </p>
+
+                  <Link
+                    href={href}
+                    className="mt-4 inline-flex text-[13px] font-bold text-[var(--xd-gold-text)] underline-offset-4 hover:underline"
+                  >
+                    {t(`aboutPage.workflow.steps.${id}.cta`)}
+                  </Link>
 
                   <TimelineMedia
                     source={media}
@@ -902,6 +904,13 @@ function BuyingWorkflowSection() {
                       <p className="mt-4 max-w-[500px] text-[15px] leading-[26px] text-[var(--xd-text-muted)]">
                         {t(`aboutPage.workflow.steps.${activeStep.id}.description`)}
                       </p>
+
+                      <Link
+                        href={activeStep.href}
+                        className="mt-5 inline-flex text-[13px] font-bold text-[var(--xd-gold-text)] underline-offset-4 hover:underline"
+                      >
+                        {t(`aboutPage.workflow.steps.${activeStep.id}.cta`)}
+                      </Link>
                     </motion.div>
                   </AnimatePresence>
                 </div>
@@ -971,23 +980,7 @@ function ContactActionsSection() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {CONTACT_ACTIONS.map(({ Icon, id }) => (
-              <Link
-                key={id}
-                href="/contact"
-                className="flex min-h-[112px] flex-col items-center justify-center gap-3 rounded-[12px] border border-[var(--xd-gold-border-soft)] bg-white/70 px-4 py-5 shadow-[0_8px_22px_rgba(5,5,5,0.04)] transition hover:-translate-y-0.5 hover:border-[var(--xd-gold-border-hover)]"
-              >
-                <span className="xd-accent-icon-surface xd-icon-card-surface flex h-10 w-10 items-center justify-center rounded-[10px]">
-                  <PremiumAccentIcon icon={Icon} size={18} />
-                </span>
-
-                <span className="text-[13px] font-semibold text-[#050505]">
-                  {t(`aboutPage.contact.actions.${id}`)}
-                </span>
-              </Link>
-            ))}
-          </div>
+          <div className="mt-12"><ContactMethods /></div>
         </SectionReveal>
       </Container>
     </section>

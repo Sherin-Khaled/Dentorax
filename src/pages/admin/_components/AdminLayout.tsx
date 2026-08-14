@@ -191,7 +191,7 @@ function SidebarContent({
   return (
     <>
       <div className="border-b border-[#EFE2BC] px-6 py-5">
-        <p className="text-lg font-black tracking-tight text-[#050505]">X Dental Store</p>
+        <p className="text-lg font-black tracking-tight text-[#050505]">Dentorax</p>
         <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#B88A44]">
           {t("admin.shell.dashboard")}
         </p>
@@ -304,7 +304,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           >
             <div className="flex items-center justify-between border-b border-[#EFE2BC] px-6 py-5">
               <div>
-                <p className="text-lg font-black tracking-tight text-[#050505]">X Dental Store</p>
+                <p className="text-lg font-black tracking-tight text-[#050505]">Dentorax</p>
                 <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#B88A44]">
                   {t("admin.shell.admin")}
                 </p>

@@ -24,7 +24,7 @@ self.addEventListener("push", (event) => {
   const title =
     typeof payload.title === "string" && payload.title.trim()
       ? payload.title.trim()
-      : "X Dental Store";
+      : "Dentorax";
   const body =
     typeof payload.body === "string" && payload.body.trim()
       ? payload.body.trim()

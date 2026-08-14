@@ -100,6 +100,7 @@ export function createOrderRequestFingerprint(input) {
     paymentMethod: normalizeFingerprintString(input?.paymentMethod, { lowercase: true }),
     promoCode: normalizeFingerprintString(input?.promoCode).toUpperCase(),
     requestedPoints: Number(input?.requestedPoints ?? 0),
+    useWelcomeReward: input?.useWelcomeReward === true,
     requestedWalletAmount: normalizeFingerprintString(
       String(input?.requestedWalletAmount ?? "0")
     ),

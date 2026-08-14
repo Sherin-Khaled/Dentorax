@@ -52,10 +52,10 @@ export const HERO_SLIDE_SEEDS = [
     content: {
       badgeText: { en: "Cash on Delivery", ar: "الدفع عند الاستلام" },
       headline: {
-        en: "Clinic Essentials, Delivered by X Dental",
-        ar: "مستلزمات عيادتك، بتوصيل من فريق X Dental",
+        en: "Clinic Essentials, Delivered by Dentorax",
+        ar: "مستلزمات عيادتك، بتوصيل من فريق Dentorax",
       },
-      headlineHighlight: { en: "Delivered by X Dental", ar: "بتوصيل من فريق X Dental" },
+      headlineHighlight: { en: "Delivered by Dentorax", ar: "بتوصيل من فريق Dentorax" },
       subtext: {
         en: "Order trusted dental supplies and our team will contact you to confirm availability, delivery details, and Cash on Delivery payment.",
         ar: "اطلب مستلزمات أسنان موثوقة وسيتواصل معك فريقنا لتأكيد التوفر وتفاصيل التوصيل والدفع نقدًا عند الاستلام.",
@@ -65,8 +65,8 @@ export const HERO_SLIDE_SEEDS = [
       image: {
         src: "/hero%20section/secondslide.png",
         alt: {
-          en: "Dental supplies delivered by the X Dental team",
-          ar: "مستلزمات أسنان بتوصيل من فريق X Dental",
+          en: "Dental supplies delivered by the Dentorax team",
+          ar: "مستلزمات أسنان بتوصيل من فريق Dentorax",
         },
       },
       glassCard: null,

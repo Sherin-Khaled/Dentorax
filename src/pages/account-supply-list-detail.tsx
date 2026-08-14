@@ -630,7 +630,7 @@ function EmptyOrMissingList({ loading = false }: { loading?: boolean }) {
 
   return (
     <div className="overflow-x-hidden bg-[var(--xd-bg)] pb-14 pt-10 lg:pb-20 lg:pt-14">
-      <Container className="overflow-x-clip">
+      <Container account className="overflow-x-clip">
         <div className="grid min-w-0 gap-6 lg:grid-cols-[260px_minmax(0,1fr)] xl:gap-7">
           <AccountSidebar />
           <Card className="p-8 text-center">
@@ -1031,7 +1031,7 @@ export default function AccountSupplyListDetail() {
 
   return (
     <div className="overflow-x-hidden bg-[var(--xd-bg)] pb-14 pt-10 lg:pb-20 lg:pt-14">
-      <Container className="overflow-x-clip">
+      <Container account className="overflow-x-clip">
         <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[260px_minmax(0,1fr)] xl:gap-7">
           <AccountSidebar />
 

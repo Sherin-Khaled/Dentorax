@@ -96,7 +96,7 @@ export function mapProduct(product: PublicCatalogProduct): Product {
     slug: product.slug,
     name: product.name,
     nameAr: product.nameAr,
-    brand: product.brand?.name || "X Dental",
+    brand: product.brand?.name || "Dentorax",
     category: product.category?.name || "Dental Supplies",
     image: productImage || CATALOG_FALLBACK_IMAGE,
     currentPrice: Number(product.price),
@@ -142,6 +142,7 @@ export async function fetchPublicProducts(
     availability?: "available" | "out-of-stock" | "low-stock";
     featured?: boolean;
     isWeeklyOffer?: boolean;
+    bestPrices?: boolean;
     isBestSeller?: boolean;
     isNewArrival?: boolean;
     isHotDeal?: boolean;
@@ -165,6 +166,7 @@ export async function fetchPublicProducts(
   if (params.status) query.set("status", params.status);
   if (params.availability) query.set("availability", params.availability);
   if (params.featured !== undefined) query.set("featured", String(params.featured));
+  if (params.bestPrices !== undefined) query.set("bestPrices", String(params.bestPrices));
   for (const field of ["isWeeklyOffer", "isBestSeller", "isNewArrival", "isHotDeal", "isFastDelivery"] as const) {
     if (params[field] !== undefined) query.set(field, String(params[field]));
   }

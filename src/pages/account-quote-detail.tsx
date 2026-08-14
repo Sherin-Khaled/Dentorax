@@ -39,7 +39,7 @@ export default function AccountQuoteDetail() {
 
   return (
     <div className="bg-[var(--xd-bg)] pb-14 pt-10 lg:pb-20 lg:pt-14">
-      <Container><div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)] xl:gap-7"><AccountSidebar />
+      <Container account><div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)] xl:gap-7"><AccountSidebar />
         <main className="min-w-0 space-y-6">
           <Link href="/account/quotes" className="inline-flex items-center gap-2 text-[13px] font-bold text-[#717182] hover:text-[#050505]"><DirectionalIcon direction="back" size={16} />{t("quoteWorkflow.backToQuotes")}</Link>
           {isLoading && <Card className="text-center text-[14px] text-[#717182]">{t("quoteWorkflow.loadingDetails")}</Card>}

@@ -105,7 +105,7 @@ try {
     "Registration did not grant exactly 5,000 immediately available welcome points."
   );
   console.log(`✅ Register OK (${registeredUser.id})`);
-  console.log("✅ 5,000 welcome points OK");
+  console.log("✅ 5,000 atomic welcome points OK");
 
   const loginResult = await request("/auth/login", {
     method: "POST",

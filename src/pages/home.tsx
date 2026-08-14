@@ -27,6 +27,7 @@ import { ProductCarouselRow } from "@/components/dental/ProductCarouselRow";
 import { PremiumAccentIcon } from "@/components/dental/PremiumAccentIcon";
 import { SectionReveal } from "@/components/dental/SectionReveal";
 import { useCatalog } from "@/context/CatalogContext";
+import { useBrandLogoSource } from "@/hooks/useBrandLogoSource";
 import { useStore } from "@/context/StoreContext";
 import { useHeroSlides } from "@/data/heroSlides";
 import { PAYMENT_PLAN_PARTNERS } from "@/data/paymentPlans";
@@ -236,11 +237,6 @@ function isHomeTrustedBrandExcluded(brand: HomeTrustedBrand) {
   );
 }
 
-function getTrustedBrandLogoUrl(brand: HomeTrustedBrand) {
-  const logoUrl = brand.logoUrl?.trim();
-  return logoUrl || null;
-}
-
 function getBrandInitials(name: string) {
   return name
     .split(/[\s-]+/)
@@ -259,7 +255,7 @@ function selectHomeTrustedBrands(brands: HomeTrustedBrand[]) {
     const slug = brand?.slug.trim().toLowerCase();
     if (!brand || selected.length >= HOME_TRUSTED_BRAND_COUNT) return;
     if (!slug || selectedSlugs.has(slug) || isHomeTrustedBrandExcluded(brand)) return;
-    if (requireLogo && !getTrustedBrandLogoUrl(brand)) return;
+    if (requireLogo && !brand.logoUrl?.trim()) return;
 
     selected.push(brand);
     selectedSlugs.add(slug);
@@ -335,7 +331,7 @@ const HOME_TESTIMONIALS: HomeTestimonial[] = [
     name: { en: "Dr. Ahmed Fathy", ar: "د. أحمد فتحي" },
     role: { en: "Clinic Owner", ar: "مدير عيادة" },
     message: {
-      en: "Consistent quality and responsive support. X Dental has become a trusted supplier for us.",
+      en: "Consistent quality and responsive support. Dentorax has become a trusted supplier for us.",
       ar: "جودة ثابتة ودعم سريع. أصبح إكس دنتال من الموردين الموثوقين لدينا.",
     },
     rating: 5,
@@ -420,7 +416,7 @@ export default function Home() {
   const prefersReducedMotion = useReducedMotion();
   const trustedBrandsImage = `${import.meta.env.BASE_URL}hero%20section/brandsImg.png`;
   const [weeklyOfferProducts, setWeeklyOfferProducts] = useState<Product[]>([]);
-  const [bestSellerProducts, setBestSellerProducts] = useState<Product[]>([]);
+  const [bestPriceProducts, setBestPriceProducts] = useState<Product[]>([]);
   const [clinicEssentialsProducts, setClinicEssentialsProducts] = useState<Product[]>([]);
   const [fastDeliveryProducts, setFastDeliveryProducts] = useState<Product[]>([]);
   const hasClinicSpecialty = Boolean(currentUser?.clinicSpecialty?.trim());
@@ -428,26 +424,25 @@ export default function Home() {
     ? normalizeClinicSpecialty(currentUser?.clinicSpecialty)
     : DEFAULT_CLINIC_SPECIALTY;
 
-  // Keep each merchandising collection independent and bounded. Empty
-  // collections stay empty until an administrator explicitly assigns them.
+  // Keep each factual catalogue-price collection independent and bounded.
   useEffect(() => {
     const controller = new AbortController();
     Promise.all([
       fetchPublicProducts({ isWeeklyOffer: true, limit: HOME_SECTION_PRODUCT_LIMIT, signal: controller.signal }),
-      fetchPublicProducts({ isBestSeller: true, limit: HOME_SECTION_PRODUCT_LIMIT, signal: controller.signal }),
+      fetchPublicProducts({ bestPrices: true, limit: HOME_SECTION_PRODUCT_LIMIT, signal: controller.signal }),
     ])
       .then(([weekly, best]) => {
         if (!controller.signal.aborted) {
           setWeeklyOfferProducts(weekly.products);
-          setBestSellerProducts(best.products);
+          setBestPriceProducts(best.products);
         }
       })
       .catch(() => {});
     return () => controller.abort();
   }, []);
 
-  // Fast Delivery is an explicit merchandising assignment, additionally
-  // constrained to products that are currently available.
+  // Fast Delivery is derived authoritatively by the API from availability,
+  // purchase mode, taxonomy ancestry, and reviewed machine exclusions.
   useEffect(() => {
     const controller = new AbortController();
     fetchPublicProducts({ isFastDelivery: true, availability: "available", limit: HOME_SECTION_PRODUCT_LIMIT, signal: controller.signal })
@@ -727,7 +722,7 @@ export default function Home() {
 
       <HomeInfoStrip />
 
-      {/* Decorative "X Dental" background wordmark — sits below the payment strip */}
+      {/* Decorative "Dentorax" background wordmark — sits below the payment strip */}
       {/* <div className="overflow-hidden px-5 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
         <div
           className="pointer-events-none select-none text-center font-display font-bold leading-none whitespace-nowrap"
@@ -737,7 +732,7 @@ export default function Home() {
             letterSpacing: "-0.04em",
           }}
         >
-          X Dental
+          Dentorax
         </div>
       </div> */}
 
@@ -850,7 +845,7 @@ export default function Home() {
             viewAllLink="/products?isWeeklyOffer=true"
             viewAllText={t("common.viewAll")}
           />
-          {isCatalogLoading ? <div className="h-[330px] animate-pulse rounded-[24px] bg-white/65" /> : catalogError ? <div role="alert" className="rounded-[24px] border border-[#F2C8C8] bg-[#FFF3F3] p-6 text-center text-sm text-[#B42318]">{catalogError}</div> : weeklyOfferProducts.length ? <ProductCarouselRow title="" products={weeklyOfferProducts} viewAllLink="" autoSlide /> : <p className="rounded-[24px] bg-white/65 p-8 text-center text-sm text-[#717182]">{t("products.noProductsBody")}</p>}
+          {isCatalogLoading ? <div className="h-[330px] animate-pulse rounded-[24px] bg-white/65" /> : catalogError ? <div role="alert" className="rounded-[24px] border border-[#F2C8C8] bg-[#FFF3F3] p-6 text-center text-sm text-[#B42318]">{catalogError}</div> : weeklyOfferProducts.length ? <ProductCarouselRow title="" products={weeklyOfferProducts} viewAllLink="" autoSlide /> : <p className="rounded-[24px] bg-white/65 p-8 text-center text-sm text-[#717182]">{t("home.sections.weeklyEmpty")}</p>}
         </SectionReveal>
       </section>
 
@@ -866,10 +861,10 @@ export default function Home() {
           <SectionHeader
             title={t("home.sections.bestSellersTitle")}
             subtitle={t("home.sections.bestSellersSubtitle")}
-            viewAllLink="/products?isBestSeller=true"
+            viewAllLink="/products?bestPrices=true"
             viewAllText={t("common.viewAll")}
           />
-          <ProductCarouselRow title="" products={bestSellerProducts} viewAllLink="" autoSlide />
+          {isCatalogLoading ? <div className="h-[330px] animate-pulse rounded-[24px] bg-white/65" /> : catalogError ? <div role="alert" className="rounded-[24px] border border-[#F2C8C8] bg-[#FFF3F3] p-6 text-center text-sm text-[#B42318]">{catalogError}</div> : bestPriceProducts.length ? <ProductCarouselRow title="" products={bestPriceProducts} viewAllLink="" autoSlide /> : <p className="rounded-[24px] bg-white/65 p-8 text-center text-sm text-[#717182]">{t("home.sections.bestSellersEmpty")}</p>}
         </SectionReveal>
       </section>
 
@@ -1160,7 +1155,7 @@ export default function Home() {
             viewAllLink="/products?isFastDelivery=true"
             viewAllText={t("home.sections.viewFastDelivery")}
           />
-          <ProductCarouselRow title="" products={fastDeliveryProducts} viewAllLink="" autoSlide />
+          {isCatalogLoading ? <div className="h-[330px] animate-pulse rounded-[24px] bg-white/65" /> : catalogError ? <div role="alert" className="rounded-[24px] border border-[#F2C8C8] bg-[#FFF3F3] p-6 text-center text-sm text-[#B42318]">{catalogError}</div> : fastDeliveryProducts.length ? <ProductCarouselRow title="" products={fastDeliveryProducts} viewAllLink="" autoSlide /> : <p className="rounded-[24px] bg-white/65 p-8 text-center text-sm text-[#717182]">{t("home.sections.fastDeliveryEmpty")}</p>}
         </SectionReveal>
       </section>
 
@@ -1177,7 +1172,7 @@ export default function Home() {
           <div className="grid items-stretch gap-8 lg:grid-cols-2 lg:gap-10">
             <div className="flex flex-col justify-center">
               <div className="inline-flex w-fit items-center rounded-full border border-[var(--xd-gold-border-soft)] bg-white/60 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--xd-gold-active)]">
-                X Dental Store
+                Dentorax
               </div>
 
               <h2 className="mt-5 max-w-[560px] font-display text-[clamp(28px,3.5vw,44px)] font-semibold leading-[1.1] tracking-[-0.02em] text-[var(--xd-text)]">
@@ -1315,7 +1310,7 @@ function TestimonialsSection({
     >
       <SectionReveal className="relative z-10 mx-auto max-w-[1344px] px-5 text-center sm:px-8 lg:px-12">
         <p className="text-[12px] font-bold uppercase tracking-[0.18em] text-[#D9A90F]">
-          X Dental Store
+          Dentorax
         </p>
         <h2
           id="home-testimonials-title"
@@ -1326,7 +1321,7 @@ function TestimonialsSection({
         <p className="mx-auto mt-4 max-w-[620px] text-[15px] leading-7 text-[var(--xd-text-muted)] dark:text-white/60 sm:text-[16px]">
           {isRtl
             ? "رسائل وتجارب حقيقية من عملائنا مع المتجر."
-            : "Real feedback from customers who trusted X Dental Store."}
+            : "Real feedback from customers who trusted Dentorax."}
         </p>
       </SectionReveal>
 
@@ -1558,9 +1553,8 @@ function WhyFeatureCard({
 
 function BrandCard({ brand }: { brand: HomeTrustedBrand }) {
   const { t } = useLanguage();
-  const [logoFailed, setLogoFailed] = useState(false);
-  const logoUrl = getTrustedBrandLogoUrl(brand);
-  const showLogo = Boolean(logoUrl) && !logoFailed;
+  const { logoUrl, handleLogoError } = useBrandLogoSource(brand);
+  const showLogo = Boolean(logoUrl);
 
   return (
     <Link
@@ -1590,7 +1584,7 @@ function BrandCard({ brand }: { brand: HomeTrustedBrand }) {
             loading="lazy"
             decoding="async"
             className="h-full w-full object-contain"
-            onError={() => setLogoFailed(true)}
+            onError={handleLogoError}
           />
         ) : (
           <span

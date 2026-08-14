@@ -112,7 +112,7 @@ export default function AccountWallet() {
 
   return (
     <div className="bg-[var(--xd-bg)] pb-14 pt-10 lg:pb-20 lg:pt-14">
-      <Container className="overflow-x-clip">
+      <Container account className="overflow-x-clip">
         <div className="grid min-w-0 gap-6 lg:grid-cols-[260px_minmax(0,1fr)] xl:gap-7">
           <AccountSidebar />
 
@@ -254,23 +254,15 @@ export default function AccountWallet() {
                       <p className="mt-1">
                         {accountT(t, "wallet.redemptionRuleBody", "Redeem in 100-point increments, where 100 points gives EGP 10 of eligible product value, up to 20% of the product subtotal. Points expire 12 months after activation.")}
                       </p>
-                      <p className="mt-2 text-[12px]">
-                        {accountT(
-                          t,
-                          "wallet.welcomeRuleBody",
-                          "{points} welcome points are available immediately and expire after {days} days. Points can be redeemed on orders of EGP {minimum} or more, including your first order. Points cannot pay shipping; store credit is separate.",
-                          {
-                            points: summary.settings.welcomePoints,
-                            days: summary.settings.welcomeExpiryDays,
-                            minimum: summary.settings.welcomeMinimumSubtotalEgp,
-                          }
-                        )}
-                      </p>
                     </div>
                   </div>
                   <div className="mt-4 flex items-start gap-2 text-[12px] leading-5 text-[#717182] dark:text-[#C6BEAE]">
+                    <Gift size={16} className="mt-0.5 shrink-0 text-[var(--xd-gold-active)]" aria-hidden="true" />
+                    <p>{accountT(t, "wallet.promoMinimumRule", "Promotional points from a signup promo code can only be redeemed on orders of EGP 5,000 or more. This minimum does not apply to points earned from regular shopping.")}</p>
+                  </div>
+                  <div className="mt-4 flex items-start gap-2 text-[12px] leading-5 text-[#717182] dark:text-[#C6BEAE]">
                     <ShieldCheck size={16} className="mt-0.5 shrink-0 text-[var(--xd-gold-active)]" aria-hidden="true" />
-                    <p>{accountT(t, "wallet.notCashNotice", "Points and store credit cannot be withdrawn or transferred. Wallet credit is used only for X Dental Store orders.")}</p>
+                    <p>{accountT(t, "wallet.notCashNotice", "Points and store credit cannot be withdrawn or transferred. Wallet credit is used only for Dentorax orders.")}</p>
                   </div>
                 </section>
               </>

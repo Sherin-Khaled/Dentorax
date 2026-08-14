@@ -6,7 +6,7 @@ const catalogSource = readFileSync(new URL("../services/catalog.ts", import.meta
 const productCardSource = readFileSync(new URL("../components/dental/ProductCard.tsx", import.meta.url), "utf8");
 const fallbackPath = new URL("../../public/toothtools.webp", import.meta.url);
 
-test("null Product.imageUrl maps to the existing X Dental fallback asset", () => {
+test("null Product.imageUrl maps to the existing Dentorax fallback asset", () => {
   assert.match(catalogSource, /product\.imageUrl \|\| product\.images\[0\]/);
   assert.match(catalogSource, /productImage \|\| CATALOG_FALLBACK_IMAGE/);
   assert.match(catalogSource, /toothtools\.webp/);

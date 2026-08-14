@@ -401,7 +401,7 @@ function detectProvisionalDataWarnings(sheets) {
   const issues = [];
   for (const r of sheets.Products.rows) {
     const notes = r.values.internal_notes || "";
-    if (PROVISIONAL_PRICE_PATTERN.test(notes)) issues.push({ entityType: "PRODUCTS", excelRow: r.excelRow, downgrade: false, message: "Reference price is provisional and requires X Dental review before publication." });
+    if (PROVISIONAL_PRICE_PATTERN.test(notes)) issues.push({ entityType: "PRODUCTS", excelRow: r.excelRow, downgrade: false, message: "Reference price is provisional and requires Dentorax review before publication." });
     if (PROVISIONAL_STOCK_PATTERN.test(notes)) issues.push({ entityType: "PRODUCTS", excelRow: r.excelRow, downgrade: false, message: "Stock quantity is a provisional staging value, not confirmed physical stock." });
     if (MANUFACTURER_INCOMPLETE_PATTERN.test(notes)) issues.push({ entityType: "PRODUCTS", excelRow: r.excelRow, downgrade: false, message: "Manufacturer verification is incomplete for this product." });
   }

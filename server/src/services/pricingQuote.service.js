@@ -57,6 +57,7 @@ export function createPricingInputFingerprint({
   promoCode,
   clinicLocationId,
   requestedPoints = 0,
+  useWelcomeReward = false,
   requestedWalletAmount = 0,
 }) {
   const canonical = {
@@ -67,6 +68,7 @@ export function createPricingInputFingerprint({
       .sort((left, right) => itemSortKey(left).localeCompare(itemSortKey(right))),
     promoCode: normalizeText(promoCode).toUpperCase(),
     requestedPoints: Number(requestedPoints),
+    useWelcomeReward: useWelcomeReward === true,
     requestedWalletAmount: normalizeText(String(requestedWalletAmount)),
   };
   return createHash("sha256").update(stableJson(canonical), "utf8").digest("hex");

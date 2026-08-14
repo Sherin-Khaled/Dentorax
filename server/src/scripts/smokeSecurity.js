@@ -22,6 +22,17 @@ try {
     "Production auth cookie defaults are not secure."
   );
   process.env.NODE_ENV = "test";
+  process.env.COOKIE_SECURE = "";
+  requireValue(
+    getAuthCookieOptions().secure === false,
+    "Local HTTP development cookie default unexpectedly became secure."
+  );
+  process.env.COOKIE_SECURE = "true";
+  requireValue(
+    getAuthCookieOptions().secure === true,
+    "Local HTTPS tunnel cookie opt-in was not honored."
+  );
+  process.env.COOKIE_SECURE = "";
 
   await once(server, "listening");
   const address = server.address();

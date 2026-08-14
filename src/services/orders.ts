@@ -70,6 +70,9 @@ export type OrderPricingSnapshot = {
   loyalty: {
     pointsRedeemed: number;
     pointsRedemptionValue: number;
+    welcomePointsRedeemed: number;
+    welcomeRewardValue: number;
+    earnedPointsRedeemed: number;
     walletCreditUsed: number;
     remainingCodAmount: number;
     eligibleEarningAmount: number;
@@ -138,6 +141,7 @@ export type CreateOrderInput = {
   clinicLocationId?: string | null;
   pricingQuoteToken?: string;
   requestedPoints?: number;
+  useWelcomeReward?: boolean;
   requestedWalletAmount?: number | string;
   items: Array<{
     productId?: string;
@@ -168,7 +172,15 @@ export type TrustedOrderTotals = {
   availablePoints: number;
   pendingPoints: number;
   welcomePointsAvailable: number;
+  welcomeRewardAvailable: boolean;
+  welcomeRewardPoints: number;
+  welcomeRewardValue: number;
+  welcomeRewardApplied: boolean;
+  welcomePointsRedeemed: number;
+  earnedPointsAvailable: number;
+  earnedPointsRedeemed: number;
   welcomeMinimumSubtotal: number;
+  eligibleProductSubtotal: number;
   welcomePointsEligible: boolean;
   pointValue: number;
   walletBalance: number;
@@ -240,7 +252,7 @@ export async function createOrder(
 }
 
 export async function previewOrderTotals(
-  input: Pick<CreateOrderInput, "deliveryMethod" | "items" | "promoCode" | "clinicLocationId" | "requestedPoints" | "requestedWalletAmount">,
+  input: Pick<CreateOrderInput, "deliveryMethod" | "items" | "promoCode" | "clinicLocationId" | "requestedPoints" | "useWelcomeReward" | "requestedWalletAmount">,
   signal?: AbortSignal
 ) {
   const result = await apiRequest<{ totals: TrustedOrderTotals }>("/orders/preview", {

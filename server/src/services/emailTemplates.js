@@ -46,7 +46,7 @@ export function buildSubmissionEmail({ category, payload = {}, appBaseUrl = "" }
     : "";
 
   const textLines = [
-    "X Dental Store",
+    "Dentorax",
     meta.label,
     "",
     ...rows.map(([label, value]) => `${label}: ${cleanLine(value)}`),
@@ -66,7 +66,7 @@ export function buildSubmissionEmail({ category, payload = {}, appBaseUrl = "" }
   <body style="margin:0;background:#F7F5EF;font-family:Arial,sans-serif;color:#242424">
     <div style="max-width:680px;margin:0 auto;padding:28px 16px">
       <div style="background:#11100D;color:#F9DC5C;border-radius:18px 18px 0 0;padding:22px 26px">
-        <div style="font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase">X Dental Store</div>
+        <div style="font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase">Dentorax</div>
         <h1 style="margin:10px 0 0;font-size:24px;color:#FFFFFF">${escapeHtml(meta.label)}</h1>
       </div>
       <div style="background:#FFFFFF;border:1px solid #E8D9A5;border-top:0;border-radius:0 0 18px 18px;padding:22px">

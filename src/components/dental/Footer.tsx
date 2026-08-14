@@ -3,8 +3,10 @@ import { Link, useLocation } from "wouter";
 import {
   Facebook,
   Instagram,
-  MessageCircle,
+  Mail,
+  MapPin,
   Phone,
+  type LucideIcon,
 } from "lucide-react";
 import { DirectionalIcon } from "@/components/DirectionalIcon";
 import { BrandLogo } from "@/components/dental/BrandLogo";
@@ -47,15 +49,19 @@ const FOOTER_LINKS = {
   ],
 };
 
-const CONTACT = [
-  {
-    Icon: MessageCircle,
-    labelKey: "footer.contact.ordersWhatsApp",
-    value: "01035777335",
-    href: "https://wa.me/201035777335",
-  },
-  { Icon: Phone, labelKey: "footer.contact.mainSupport", value: "01552229405", href: "tel:+201552229405" },
-  { Icon: Phone, labelKey: "footer.contact.branch", value: "01065057035", href: "tel:+201065057035" },
+type FooterContact = {
+  Icon: LucideIcon;
+  labelKey: string;
+  value?: string;
+  valueKey?: string;
+  href?: string;
+  direction: "ltr" | "auto";
+};
+
+const CONTACT: FooterContact[] = [
+  { Icon: Phone, labelKey: "footer.contact.mainSupport", value: "01552229405", href: "tel:+201552229405", direction: "ltr" },
+  { Icon: Mail, labelKey: "footer.contact.email", value: "contact@dentora-x.com", href: "mailto:contact@dentora-x.com", direction: "ltr" },
+  { Icon: MapPin, labelKey: "footer.contact.address", valueKey: "footer.contact.addressValue", direction: "auto" },
 ];
 
 const SOCIAL = [
@@ -111,26 +117,32 @@ export function Footer() {
 
             {!isHomePage && (
               <div className="mt-7 flex flex-col gap-3">
-                {CONTACT.map(({ Icon, labelKey, value, href }) => (
-                  <div key={value} className="flex items-center gap-3">
-                    <span className="xd-icon-amber xd-icon-card-surface flex h-8 w-8 items-center justify-center rounded-[8px] bg-[var(--xd-gold-bg-soft)]">
-                      <Icon size={15} />
-                    </span>
-                    {href ? (
-                      <a
-                        href={href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[13px] text-[#3A3A3A] transition hover:text-[#050505]"
-                      >
-                        {labelKey ? `${t(labelKey)}: ` : ""}
-                        <span dir="ltr">{value}</span>
-                      </a>
-                    ) : (
-                      <span className="text-[13px] text-[#3A3A3A]">{value}</span>
-                    )}
-                  </div>
-                ))}
+                {CONTACT.map(({ Icon, labelKey, value, valueKey, href, direction }) => {
+                  const displayValue = valueKey ? t(valueKey) : value ?? "";
+                  const content = (
+                    <>
+                      {labelKey ? `${t(labelKey)}: ` : ""}
+                      <span dir={direction}>{displayValue}</span>
+                    </>
+                  );
+                  return (
+                    <div key={labelKey} className="flex items-start gap-3">
+                      <span className="xd-icon-amber xd-icon-card-surface flex h-8 w-8 items-center justify-center rounded-[8px] bg-[var(--xd-gold-bg-soft)]">
+                        <Icon size={15} />
+                      </span>
+                      {href ? (
+                        <a
+                          href={href}
+                          className="pt-1 text-[13px] leading-5 text-[#3A3A3A] transition hover:text-[#050505]"
+                        >
+                          {content}
+                        </a>
+                      ) : (
+                        <span className="max-w-[430px] pt-1 text-[13px] leading-5 text-[#3A3A3A]">{content}</span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

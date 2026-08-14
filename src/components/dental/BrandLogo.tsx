@@ -1,8 +1,8 @@
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 
-export const BRAND_NAME = "X Dental Store";
-export const ISOLATED_BRAND_NAME = "\u200EX Dental Store\u200E";
+export const BRAND_NAME = "Dentorax";
+export const ISOLATED_BRAND_NAME = "\u200EDentorax\u200E";
 
 type BrandLogoProps = {
   className?: string;

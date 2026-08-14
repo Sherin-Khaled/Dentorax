@@ -37,10 +37,21 @@ export type RegisterRequest = {
   professionalRole?: string;
   clinicSpecialty: string;
   clinicLocations: ClinicLocationInput[];
+  promoCode?: string;
+};
+
+export type WelcomePromoResult = {
+  status: "none" | "granted" | "invalid";
+  points?: number;
+  message?: string;
 };
 
 type AuthResponse = {
   user: AuthApiUser;
+};
+
+type RegisterResponse = AuthResponse & {
+  welcomePromo?: WelcomePromoResult;
 };
 
 const AUTH_SERVICE_UNAVAILABLE_MESSAGE =
@@ -126,11 +137,14 @@ async function authRequest<T>(
 }
 
 export async function registerUser(input: RegisterRequest) {
-  const response = await authRequest<AuthResponse>("/auth/register", {
+  const response = await authRequest<RegisterResponse>("/auth/register", {
     method: "POST",
     body: JSON.stringify(input),
   });
-  return response.user;
+  return {
+    user: response.user,
+    welcomePromo: response.welcomePromo ?? { status: "none" as const },
+  };
 }
 
 export async function loginUser(email: string, password: string) {

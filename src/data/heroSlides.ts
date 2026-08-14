@@ -36,7 +36,7 @@ const BRAND_SLIDE_IMAGE: HeroSlide["image"] = {
 
 const OFFER_SLIDE_IMAGE: HeroSlide["image"] = {
   src: DEFAULT_HERO_IMAGE_URLS["hero-offer"],
-  alt: { en: "Dental supplies delivered by the X Dental team", ar: "مستلزمات أسنان بتوصيل من فريق X Dental" },
+  alt: { en: "Dental supplies delivered by the Dentorax team", ar: "مستلزمات أسنان بتوصيل من فريق Dentorax" },
 };
 
 const EQUIPMENT_SLIDE_IMAGE: HeroSlide["image"] = {
@@ -79,10 +79,10 @@ export const DEFAULT_HERO_SLIDES: HeroSlide[] = [
     isActive: true,
     badgeText: { en: "Cash on Delivery", ar: "الدفع عند الاستلام" },
     headline: {
-      en: "Clinic Essentials, Delivered by X Dental",
-      ar: "مستلزمات عيادتك، بتوصيل من فريق X Dental",
+      en: "Clinic Essentials, Delivered by Dentorax",
+      ar: "مستلزمات عيادتك، بتوصيل من فريق Dentorax",
     },
-    headlineHighlight: { en: "Delivered by X Dental", ar: "بتوصيل من فريق X Dental" },
+    headlineHighlight: { en: "Delivered by Dentorax", ar: "بتوصيل من فريق Dentorax" },
     subtext: {
       en: "Order trusted dental supplies and our team will contact you to confirm availability, delivery details, and Cash on Delivery payment.",
       ar: "اطلب مستلزمات أسنان موثوقة وسيتواصل معك فريقنا لتأكيد التوفر وتفاصيل التوصيل والدفع نقدًا عند الاستلام.",
