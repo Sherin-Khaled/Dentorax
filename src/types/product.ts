@@ -1,4 +1,24 @@
+export interface ProductDisplayGroupMember {
+  productId: string;
+  sku: string | null;
+  slug: string;
+  name: string;
+  nameAr: string | null;
+  price: number;
+  salePrice: number | null;
+  isAvailable: boolean;
+  displayAttributes: { type: string; valueEn: string; valueAr: string | null }[];
+}
+
+export interface ProductDisplayGroup {
+  id: string;
+  displayName: string;
+  members: ProductDisplayGroupMember[];
+}
+
 export interface Product {
+  displayGroup?: ProductDisplayGroup | null;
+  redirected?: boolean;
   id: string;
   name: string;
   nameAr?: string | null;

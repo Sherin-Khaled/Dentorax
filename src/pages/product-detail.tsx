@@ -28,6 +28,7 @@ import { fetchPublicProduct, fetchPublicProducts } from "@/services/catalog";
 import { useImageFallback } from "@/hooks/use-image-fallback";
 import type { Product } from "@/types/product";
 import { SITE_URL } from "@/data/seo";
+import { deriveDisplayGroupChoices } from "@/lib/displayGroupOptions";
 
 type DetailTab = "description" | "specifications" | "reviews" | "shipping";
 
@@ -198,6 +199,7 @@ export default function ProductDetail() {
     ? getLocalizedProductDescription(product, language, t, t("productDetail.defaultDescription"))
     : "";
   const discount = product ? calculateDiscount(product.oldPrice ?? undefined, product.currentPrice) : 0;
+  const groupChoices = product?.displayGroup ? deriveDisplayGroupChoices(product.displayGroup.members, language) : [];
   const isWishlisted = product ? isInWishlist(product.id) : false;
   const isOutOfStock = product ? !isProductPurchasable(product) : false;
   const purchaseMode = product?.purchaseMode ?? "STANDARD";
@@ -237,6 +239,8 @@ export default function ProductDetail() {
       .then((nextProduct) => {
         if (!controller.signal.aborted) {
           setProduct(nextProduct);
+          // A retired duplicate's URL lands on the listing that replaced it.
+          if (nextProduct?.redirected && nextProduct.slug) navigate(`/products/${nextProduct.slug}`, { replace: true });
           setSelectedOption(nextProduct?.options?.[0] ?? "");
           if (nextProduct) {
             setQuantity((current) =>
@@ -617,6 +621,31 @@ export default function ProductDetail() {
                 </span>
               )}
             </div>
+
+            {groupChoices.length > 0 && (
+              <div className="mt-6" data-testid="display-group-selector">
+                <h2 className="text-[14px] font-bold text-[#050505]">{t("productDetail.productOptions")}</h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {groupChoices.map((choice) => (
+                    <Link
+                      key={choice.productId}
+                      href={`/products/${choice.slug}`}
+                      aria-current={choice.productId === product.id ? "true" : undefined}
+                      className={cn(
+                        "inline-flex min-h-9 items-center rounded-full border px-4 py-1.5 text-[13px] font-bold",
+                        choice.productId === product.id
+                          ? "xd-gradient-gold-border bg-[var(--xd-gold-bg-soft)] text-[#7A5200]"
+                          : choice.isAvailable
+                            ? "border-[#050505]/10 bg-white text-[#5F5F5F] hover:text-[#050505]"
+                            : "border-[#050505]/10 bg-[#050505]/[0.03] text-[#9A9A9A] line-through"
+                      )}
+                    >
+                      {choice.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {product.options && product.options.length > 0 && <div className="mt-6">
               <h2 className="text-[14px] font-bold text-[#050505]">{t("productDetail.productOptions")}</h2>

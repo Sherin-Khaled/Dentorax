@@ -1,5 +1,6 @@
 import { prisma } from "../config/db.js";
 import { resolveEffectiveProductPrices } from "../services/flashSalePricing.service.js";
+import { findRedirectTarget, loadDisplayGroup } from "../services/productDisplayGroup.service.js";
 import {
   buildFastDeliveryWhere,
   collectCategoryDescendantIds,
@@ -460,30 +461,45 @@ export async function getPublicProducts(request, response) {
 export async function getPublicProduct(request, response) {
   const identifier = cleanText(request.params.identifier, 200);
   if (!identifier) return response.status(404).json({ message: "Product not found." });
-  const product = await prisma.product.findFirst({
+  const findPublicProduct = (candidate) => prisma.product.findFirst({
     where: {
       status: { in: [...PUBLIC_PRODUCT_STATUSES] },
       price: { not: null },
       OR: [
-        { id: identifier },
-        { slug: { equals: identifier, mode: "insensitive" } },
-        { sku: { equals: identifier, mode: "insensitive" } },
+        { id: candidate },
+        { slug: { equals: candidate, mode: "insensitive" } },
+        { sku: { equals: candidate, mode: "insensitive" } },
       ],
     },
     include: publicProductInclude,
   });
+  let product = await findPublicProduct(identifier);
+  let redirected = false;
+  if (!product) {
+    // A retired duplicate's URL serves the listing that replaced it.
+    const targetId = await findRedirectTarget(prisma, identifier);
+    if (targetId) {
+      product = await findPublicProduct(targetId);
+      redirected = Boolean(product);
+    }
+  }
   if (!product) return response.status(404).json({ message: "Product not found." });
-  const [lookups, pricingByProductId] = await Promise.all([
+  const [lookups, pricingByProductId, displayGroup] = await Promise.all([
     publicLookups(),
     resolveEffectiveProductPrices(prisma, [product]),
+    loadDisplayGroup(prisma, product.id, (rows) => resolveEffectiveProductPrices(prisma, rows)),
   ]);
   return response.json({
-    product: serializePublicProduct(
-      product,
-      lookups.brandByName,
-      lookups.categoryByName,
-      pricingByProductId
-    ),
+    product: {
+      ...serializePublicProduct(
+        product,
+        lookups.brandByName,
+        lookups.categoryByName,
+        pricingByProductId
+      ),
+      displayGroup,
+      redirected,
+    },
   });
 }
 

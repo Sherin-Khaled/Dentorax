@@ -1,5 +1,5 @@
 import { ApiError, apiRequest, resolveApiAssetUrl } from "./http";
-import type { Product } from "@/types/product";
+import type { Product, ProductDisplayGroup } from "@/types/product";
 
 export const CATALOG_FALLBACK_IMAGE = `${import.meta.env.BASE_URL}toothtools.webp`;
 
@@ -40,6 +40,8 @@ export type PublicCatalogProduct = {
   isAvailable: boolean;
   deliveryLabel?: string | null;
   options: string[];
+  displayGroup?: ProductDisplayGroup | null;
+  redirected?: boolean;
 };
 
 export type CatalogCategory = {
@@ -126,6 +128,8 @@ export function mapProduct(product: PublicCatalogProduct): Product {
     stockQuantity: product.stockQuantity,
     status: product.status,
     available,
+    displayGroup: product.displayGroup ?? null,
+    redirected: product.redirected ?? false,
   };
 }
 
